@@ -38,12 +38,14 @@ public class Member extends BaseEntity {
     @Column(name = "profile_image")
     private String profileImage;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "social_type", nullable = false)
     private SocialType socialType;
 
     @Column(name = "provider_user_id")
     private String providerUserId;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private Status status = Status.ACTIVATE;
 
