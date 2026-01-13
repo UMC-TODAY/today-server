@@ -13,4 +13,10 @@ public interface MemberControllerDocs {
             description = "해당 이메일로 가입된 계정이 있는지 확인합니다."
     )
     ApiResponse<Void> checkEmail(@Valid @RequestBody EmailReqDto.EmailCheck dto);
+
+    @Operation(
+            summary = "이메일 인증코드 발송",
+            description = "해당 이메일로 인증코드 6자리를 발송합니다."
+    )
+    ApiResponse<Void> sendEmailVerification(@Valid @RequestBody EmailReqDto.EmailCheck dto);
 }
