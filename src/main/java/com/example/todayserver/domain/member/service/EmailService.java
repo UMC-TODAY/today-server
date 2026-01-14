@@ -6,6 +6,7 @@ import com.example.todayserver.domain.member.excpetion.code.AuthErrorCode;
 import com.example.todayserver.domain.member.repository.EmailCodeRepository;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -18,6 +19,7 @@ import java.time.LocalDateTime;
 import java.util.Random;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class EmailService {
 
@@ -28,23 +30,23 @@ public class EmailService {
     @Value("${spring.mail.username}")
     private String fromEmail;
 
-    public void sendVerificationEmail(String emailTo) {
+    public void sendVerificationEmail(String emailTo, String type) {
         String code = generateVerificationCode();
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
 
         try {
-            sendVerifyCode(emailTo, mimeMessage, code);
+            sendVerifyCode(emailTo, mimeMessage, code, type);
             saveEmailVerifyCode(emailTo, code);
         } catch (MessagingException e) {
             throw new AuthException(AuthErrorCode.CODE_ERROR);
         }
     }
 
-    private void sendVerifyCode(String emailTo, MimeMessage mimeMessage, String code) throws MessagingException {
+    private void sendVerifyCode(String emailTo, MimeMessage mimeMessage, String code, String type) throws MessagingException {
         MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, false, "UTF-8");
         mimeMessageHelper.setTo(emailTo);
         mimeMessageHelper.setSubject("[TO:DAY] 이메일 인증 코드 발송");
-        mimeMessageHelper.setText(createHtmlEmailBody(code),true);
+        mimeMessageHelper.setText(createHtmlEmailBody(code, type),true);
         mimeMessageHelper.setFrom(fromEmail);
         javaMailSender.send(mimeMessage);
     }
@@ -65,10 +67,10 @@ public class EmailService {
     }
 
     // 인증 이메일 뷰 생성
-    private String createHtmlEmailBody(String code) {
+    private String createHtmlEmailBody(String code, String type) {
         Context context = new Context();
         context.setVariable("code", code);
-        return templateEngine.process("email_code", context);
+        return templateEngine.process(type, context);
     }
 
     public void checkEmailVerifyCode(String email, String code){

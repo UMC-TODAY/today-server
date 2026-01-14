@@ -22,7 +22,19 @@ public interface MemberControllerDocs {
 
     @Operation(
             summary = "이메일 인증코드 확인",
-            description = "인증코드가 맞는지 확인합니다."
+            description = "인증코드가 유효한지 확인합니다."
     )
     ApiResponse<Void> checkEmailVerification(@Valid @RequestBody EmailReqDto.EmailCode dto);
+
+    @Operation(
+            summary = "비밀번호 재설정 인증코드 발송",
+            description = "해당 이메일로 인증코드 6자리를 발송합니다."
+    )
+    ApiResponse<Void> sendPasswordResetVerification(@Valid @RequestBody EmailReqDto.EmailCheck dto);
+
+    @Operation(
+            summary = "비밀번호 재설정 인증코드 확인",
+            description = "인증코드가 유효한지 확인합니다."
+    )
+    ApiResponse<Void> checkPasswordResetVerification(@Valid @RequestBody EmailReqDto.EmailCode dto);
 }
