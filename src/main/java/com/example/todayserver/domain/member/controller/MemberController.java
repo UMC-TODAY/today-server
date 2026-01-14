@@ -28,4 +28,10 @@ public class MemberController implements MemberControllerDocs {
         emailService.sendVerificationEmail(dto.getEmail());
         return ApiResponse.success(null);
     }
+
+    @PostMapping("/auth/email/verification-codes/verify")
+    public ApiResponse<Void> checkEmailVerification(@Valid @RequestBody EmailReqDto.EmailCode dto){
+        emailService.checkEmailVerifyCode(dto.getEmail(), dto.getCode());
+        return ApiResponse.success(null);
+    }
 }
