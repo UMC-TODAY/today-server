@@ -25,7 +25,25 @@ public class MemberController implements MemberControllerDocs {
 
     @PostMapping("/auth/email/verification-codes")
     public ApiResponse<Void> sendEmailVerification(@Valid @RequestBody EmailReqDto.EmailCheck dto) {
-        emailService.sendVerificationEmail(dto.getEmail());
+        emailService.sendVerificationEmail(dto.getEmail(), "email_code");
+        return ApiResponse.success(null);
+    }
+
+    @PostMapping("/auth/email/verification-codes/verify")
+    public ApiResponse<Void> checkEmailVerification(@Valid @RequestBody EmailReqDto.EmailCode dto){
+        emailService.checkEmailVerifyCode(dto.getEmail(), dto.getCode());
+        return ApiResponse.success(null);
+    }
+
+    @PostMapping("/members/password/verification-codes")
+    public ApiResponse<Void> sendPasswordResetVerification(@Valid @RequestBody EmailReqDto.EmailCheck dto){
+        emailService.sendVerificationEmail(dto.getEmail(), "password_code");
+        return ApiResponse.success(null);
+    }
+
+    @PostMapping("/members/password/verification-codes/verify")
+    public ApiResponse<Void> checkPasswordResetVerification(@Valid @RequestBody EmailReqDto.EmailCode dto){
+        emailService.checkEmailVerifyCode(dto.getEmail(), dto.getCode());
         return ApiResponse.success(null);
     }
 }
