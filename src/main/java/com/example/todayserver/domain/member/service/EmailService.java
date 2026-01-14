@@ -13,7 +13,6 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class EmailService {
 
@@ -33,6 +32,7 @@ public class EmailService {
         }
     }
 
+    @Transactional
     public void checkEmailVerifyCode(String email, String code){
         EmailVerification ev = emailCodeRepository.findByEmailAndCode(email, code)
                 .orElseThrow(() -> new AuthException(AuthErrorCode.CODE_NOT_EXIST));
