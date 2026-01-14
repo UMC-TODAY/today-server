@@ -2,7 +2,10 @@ name: Java CI/CD with Gradle and Docker
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "dev" ]
+  pull_request:
+    branches: [ "main", "dev" ]
+  workflow_dispatch:
 
 jobs:
   build-and-deploy:
