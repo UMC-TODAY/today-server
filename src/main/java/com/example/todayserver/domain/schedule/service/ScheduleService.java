@@ -120,4 +120,31 @@ public class ScheduleService {
         }
         return eventMonthlyConverter.toEventMonthlyListRes(filterLabel, schedules);
     }
+
+
+    // 월별 일정 완료 현황 조회
+    @Transactional(readOnly = true)
+    public EventMonthlyCompletionRes getMonthlyEventCompletion(Long memberId, int year, int month) {
+
+        LocalDate startDate = LocalDate.of(year, month, 1);
+        LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
+
+        LocalDateTime startedAtFrom = startDate.atStartOfDay();
+        LocalDateTime startedAtTo = endDate.atTime(23, 59, 59);
+
+        long total = scheduleRepository.countByMemberIdAndScheduleTypeAndStartedAtBetween(
+                memberId,
+                ScheduleType.EVENT,
+                startedAtFrom,
+                startedAtTo
+        );
+        long completed = scheduleRepository.countByMemberIdAndScheduleTypeAndStartedAtBetweenAndIsDoneTrue(
+                memberId,
+                ScheduleType.EVENT,
+                startedAtFrom,
+                startedAtTo
+        );
+
+        return EventMonthlyCompletionRes.of(year, month, total, completed);
+    }
 }

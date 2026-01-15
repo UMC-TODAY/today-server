@@ -26,4 +26,20 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
             LocalDateTime startedAtTo,
             ScheduleSource source
     );
+
+    // 월별 총 일정 개수 조회
+    long countByMemberIdAndScheduleTypeAndStartedAtBetween(
+            Long memberId,
+            ScheduleType scheduleType,
+            LocalDateTime startedAtFrom,
+            LocalDateTime startedAtTo
+    );
+
+    // 월별 완료된 일정 총 개수 조회
+    long countByMemberIdAndScheduleTypeAndStartedAtBetweenAndIsDoneTrue(
+            Long memberId,
+            ScheduleType scheduleType,
+            LocalDateTime startedAtFrom,
+            LocalDateTime startedAtTo
+    );
 }
