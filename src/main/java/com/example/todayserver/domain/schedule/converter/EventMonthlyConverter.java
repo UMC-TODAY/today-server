@@ -10,8 +10,8 @@ import java.util.List;
 @Component
 public class EventMonthlyConverter {
 
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE;      // yyyy-MM-dd
-    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");  // HH:mm
+    private static final DateTimeFormatter DATE_TIME_FORMATTER =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     // 월별 일정 리스트 -> EventMonthlyListRes로 변환
     public EventMonthlyListRes toEventMonthlyListRes(String filter, List<Schedule> schedules
@@ -25,11 +25,17 @@ public class EventMonthlyConverter {
 
     // Schedule 엔티티 1건 -> EventDto 로 변환
     private EventMonthlyListRes.EventDto toEventDto(Schedule schedule) {
-        String date = schedule.getScheduleDate() != null ? schedule.getScheduleDate().format(DATE_FORMATTER) : null;
 
-        String startTime = schedule.getStartTime() != null ? schedule.getStartTime().format(TIME_FORMATTER) : null;
+        String startedAt = null;
+        String endedAt = null;
 
-        String endTime = schedule.getEndTime() != null ? schedule.getEndTime().format(TIME_FORMATTER) : null;
+        if (schedule.getStartedAt() != null) {
+            startedAt = schedule.getStartedAt().format(DATE_TIME_FORMATTER);
+        }
+
+        if (schedule.getEndedAt() != null) {
+            endedAt = schedule.getEndedAt().format(DATE_TIME_FORMATTER);
+        }
 
         return new EventMonthlyListRes.EventDto(
                 schedule.getId(),
@@ -37,9 +43,8 @@ public class EventMonthlyConverter {
                 schedule.getColor(),
                 schedule.getEmoji(),
                 schedule.isDone(),
-                date,
-                startTime,
-                endTime,
+                startedAt,
+                endedAt,
                 schedule.getSource()
         );
     }

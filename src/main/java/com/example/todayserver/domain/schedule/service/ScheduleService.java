@@ -5,6 +5,7 @@ import com.example.todayserver.domain.member.excpetion.code.MemberErrorCode;
 import com.example.todayserver.domain.member.repository.MemberRepository;
 import com.example.todayserver.domain.schedule.converter.EventMonthlyConverter;
 import com.example.todayserver.domain.schedule.converter.ScheduleCreateConverter;
+import com.example.todayserver.domain.schedule.dto.EventMonthlyCompletionRes;
 import com.example.todayserver.domain.schedule.dto.EventMonthlyListRes;
 import com.example.todayserver.domain.schedule.dto.EventMonthlySearchReq;
 import com.example.todayserver.domain.schedule.dto.ScheduleCreateReq;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -65,6 +67,10 @@ public class ScheduleService {
         LocalDate startDate = LocalDate.of(year, month, 1);
         LocalDate endDate = startDate.plusMonths(1).minusDays(1);
 
+        // DATETIME 범위 (startedAt 기준)
+        LocalDateTime startedAtFrom = startDate.atStartOfDay();
+        LocalDateTime startedAtTo = endDate.atTime(23, 59, 59);
+
         // 지난 일정 숨기기 여부 (null 이면 false)
         boolean hidePast = Boolean.TRUE.equals(req.hidePast());
 
@@ -72,21 +78,21 @@ public class ScheduleService {
 
         if ("ALL".equals(filterLabel)) {
             // 한 달 일정 전체 조회
-            schedules = scheduleRepository.findByMemberIdAndScheduleTypeAndScheduleDateBetween(
+            schedules = scheduleRepository.findByMemberIdAndScheduleTypeAndStartedAtBetween(
                     memberId,
                     ScheduleType.EVENT,
-                    startDate,
-                    endDate
+                    startedAtFrom,
+                    startedAtTo
             );
         } else {
             // 특정 출처만 조회 (GOOGLE, NOTION, ICLOUD, CSV, LOCAL)
             ScheduleSource sourceFilter = ScheduleSource.valueOf(filterLabel);
 
-            schedules = scheduleRepository.findByMemberIdAndScheduleTypeAndScheduleDateBetweenAndSource(
+            schedules = scheduleRepository.findByMemberIdAndScheduleTypeAndStartedAtBetweenAndSource(
                     memberId,
                     ScheduleType.EVENT,
-                    startDate,
-                    endDate,
+                    startedAtFrom,
+                    startedAtTo,
                     sourceFilter
             );
         }
@@ -102,8 +108,10 @@ public class ScheduleService {
             if (isCurrentMonth) {
                 schedules = schedules.stream()
                         .filter(schedule -> {
-                            LocalDate date = schedule.getScheduleDate();
-
+                            if (schedule.getStartedAt() == null) {
+                                return true;
+                            }
+                            LocalDate date = schedule.getStartedAt().toLocalDate();
                             // 오늘 이전 날짜면 숨김
                             return !date.isBefore(today);
                         })
@@ -111,5 +119,32 @@ public class ScheduleService {
             }
         }
         return eventMonthlyConverter.toEventMonthlyListRes(filterLabel, schedules);
+    }
+
+
+    // 월별 일정 완료 현황 조회
+    @Transactional(readOnly = true)
+    public EventMonthlyCompletionRes getMonthlyEventCompletion(Long memberId, int year, int month) {
+
+        LocalDate startDate = LocalDate.of(year, month, 1);
+        LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
+
+        LocalDateTime startedAtFrom = startDate.atStartOfDay();
+        LocalDateTime startedAtTo = endDate.atTime(23, 59, 59);
+
+        long total = scheduleRepository.countByMemberIdAndScheduleTypeAndStartedAtBetween(
+                memberId,
+                ScheduleType.EVENT,
+                startedAtFrom,
+                startedAtTo
+        );
+        long completed = scheduleRepository.countByMemberIdAndScheduleTypeAndStartedAtBetweenAndIsDoneTrue(
+                memberId,
+                ScheduleType.EVENT,
+                startedAtFrom,
+                startedAtTo
+        );
+
+        return EventMonthlyCompletionRes.of(year, month, total, completed);
     }
 }
