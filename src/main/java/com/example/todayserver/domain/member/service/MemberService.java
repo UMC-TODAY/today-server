@@ -1,8 +1,9 @@
 package com.example.todayserver.domain.member.service;
 
-import com.example.todayserver.domain.member.dto.EmailReqDto;
+import com.example.todayserver.domain.member.dto.MemberReqDto;
 
 public interface MemberService {
 
-    void checkEmailDuplicate(EmailReqDto.EmailCheck dto);
+    void checkEmailDuplicate(String email);
+    void emailSignup(MemberReqDto.SignupDto dto);
 }

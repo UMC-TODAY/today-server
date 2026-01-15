@@ -4,6 +4,7 @@ import com.example.todayserver.domain.member.entity.EmailVerification;
 import com.example.todayserver.domain.member.repository.EmailCodeRepository;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -34,6 +35,7 @@ public class EmailVerificationService {
         javaMailSender.send(mimeMessage);
     }
 
+    @Transactional
     public void saveEmailVerifyCode(String emailTo, String code) {
         emailCodeRepository.deleteByEmail(emailTo);
         EmailVerification ev = EmailVerification.builder()
