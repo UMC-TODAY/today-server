@@ -54,4 +54,5 @@ jobs:
               -e DB_PASSWORD="${{ secrets.DB_PASSWORD }}" \
               -e MAIL_USERNAME="${{ secrets.MAIL_USERNAME }}" \
               -e MAIL_PASSWORD="${{ secrets.MAIL_PASSWORD }}" \
+              -e SECRET_KEY="${{ secrets.SECRET_KEY }}" \
               ${{ secrets.DOCKERHUB_USERNAME }}/today-app
