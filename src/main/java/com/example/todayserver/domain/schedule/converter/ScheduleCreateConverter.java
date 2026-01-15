@@ -8,8 +8,7 @@ import com.example.todayserver.domain.schedule.entity.SubSchedule;
 import com.example.todayserver.domain.schedule.enums.ScheduleSource;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
@@ -22,9 +21,8 @@ public class ScheduleCreateConverter {
 
     public Schedule toSchedule(ScheduleCreateReq req, Member member) {
 
-        LocalDate scheduleDate = resolveScheduleDate(req);
-        LocalTime startTime = parseTimeOrNull(req.startAt());
-        LocalTime endTime = parseTimeOrNull(req.endAt());
+        LocalDateTime startedAt = resolveStartedAt(req);
+        LocalDateTime endedAt = parseDateTimeOrNull(req.endAt());
 
         return Schedule.builder()
                 .member(member)
@@ -35,11 +33,10 @@ public class ScheduleCreateConverter {
                 .memo(req.memo())
                 .color(req.bgColor())
                 .emoji(req.emoji())
-                .scheduleDate(scheduleDate)
-                .startTime(startTime)
-                .endTime(endTime)
+                .startedAt(startedAt)
+                .endedAt(endedAt)
                 .repeatType(req.repeatType())
-                .durationMinutes(req.duration())
+                .durationMinutes(req.duration()) // EVENT 일 경우 null
                 .isDone(false) // 초기값 = false
                 .build();
     }
@@ -62,22 +59,22 @@ public class ScheduleCreateConverter {
                 .toList();
     }
 
-    // date 또는 startAt 기준으로 scheduleDate 계산
-    private LocalDate resolveScheduleDate(ScheduleCreateReq req) {
-        if (req.date() != null) {
-            return req.date();
-        }
+    // startedAt 계산
+    private LocalDateTime resolveStartedAt(ScheduleCreateReq req) {
         if (req.startAt() != null && !req.startAt().isBlank()) {
-            return LocalDate.parse(req.startAt(), DATE_TIME_FORMATTER);
+            return LocalDateTime.parse(req.startAt(), DATE_TIME_FORMATTER);
+        }
+        if (req.date() != null) {
+            return req.date().atStartOfDay(); // 해당 일자의 T00:00:00
         }
         return null;
     }
 
-    // LocalTime으로 파싱
-    private LocalTime parseTimeOrNull(String dateTimeText) {
+    // endedAt 파싱 (Event에서만 사용)
+    private LocalDateTime parseDateTimeOrNull(String dateTimeText) {
         if (dateTimeText == null || dateTimeText.isBlank()) {
             return null;
         }
-        return LocalTime.parse(dateTimeText, DATE_TIME_FORMATTER);
+        return LocalDateTime.parse(dateTimeText, DATE_TIME_FORMATTER);
     }
 }

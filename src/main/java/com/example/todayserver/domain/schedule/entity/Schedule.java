@@ -12,8 +12,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 
 @Getter
 @Builder
@@ -51,14 +50,11 @@ public class Schedule extends BaseEntity {
     @Column(nullable = true, length = 10)
     private String emoji;
 
-    @Column(name = "schedule_date", nullable = true)
-    private LocalDate scheduleDate;
+    @Column(name = "started_at")
+    private LocalDateTime startedAt;
 
-    @Column(name = "start_time", nullable = true)
-    private LocalTime startTime;
-
-    @Column(name = "end_time", nullable = true)
-    private LocalTime endTime;
+    @Column(name = "ended_at")
+    private LocalDateTime endedAt;
 
     @Column(name = "repeat_type", nullable = true)
     @Enumerated(EnumType.STRING)
