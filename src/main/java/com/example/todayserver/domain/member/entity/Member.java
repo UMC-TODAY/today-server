@@ -26,10 +26,10 @@ public class Member extends BaseEntity {
     @Column(name = "email", length = 30, nullable = false, unique = true)
     private String email;
 
-    @Column(name = "password", length = 32)
+    @Column(name = "password", length = 255)
     private String password;
 
-    @Column(name = "nickname", length = 20)
+    @Column(name = "nickname", length = 20, unique = true)
     private String nickname;
 
     @Column(name = "birth")

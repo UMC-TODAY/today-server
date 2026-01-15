@@ -19,7 +19,11 @@ public enum AuthErrorCode implements BaseErrorCode {
 
     CODE_EXPIRED(HttpStatus.BAD_REQUEST,
             "EMAIL_VERIFY_400_2",
-            "만료된 인증번호입니다.");
+            "만료된 인증번호입니다."),
+
+    INVALID_EMAIL(HttpStatus.BAD_REQUEST,
+            "EMAIL_VERIFY_400_3",
+            "인증되지 않은 이메일입니다.");
 
 
 
