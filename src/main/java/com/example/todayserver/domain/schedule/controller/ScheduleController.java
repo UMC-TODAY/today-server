@@ -1,5 +1,7 @@
 package com.example.todayserver.domain.schedule.controller;
 
+import com.example.todayserver.domain.schedule.dto.EventMonthlyListRes;
+import com.example.todayserver.domain.schedule.dto.EventMonthlySearchReq;
 import com.example.todayserver.domain.schedule.dto.ScheduleCreateReq;
 import com.example.todayserver.domain.schedule.service.ScheduleService;
 import com.example.todayserver.global.common.response.ApiResponse;
@@ -27,5 +29,17 @@ public class ScheduleController {
         Long scheduleId = scheduleService.createSchedule(memberId, req);
 
         return ApiResponse.success("요청이 성공적으로 처리되었습니다.", scheduleId);
+    }
+
+    @Operation(summary = "월별 일정 조회", description = "연도/월/출처 필터 기준으로 일정 목록을 조회합니다.")
+    @GetMapping("/events")
+    public ApiResponse<EventMonthlyListRes> getMonthlyEvents(
+            @RequestParam("memberId") Long memberId,              // 임시 파라미터 추후 인증정보로 대체 예정
+            @Valid @ModelAttribute EventMonthlySearchReq req
+    ) {
+
+        EventMonthlyListRes res = scheduleService.getMonthlyEvents(memberId, req);
+
+        return ApiResponse.success(res);
     }
 }
