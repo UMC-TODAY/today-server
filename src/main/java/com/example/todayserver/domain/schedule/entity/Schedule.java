@@ -46,7 +46,7 @@ public class Schedule extends BaseEntity {
     @Column(nullable = true, length = 10)
     private String emoji;
 
-    @Column(name = "schedule_date", nullable = false)
+    @Column(name = "schedule_date", nullable = true)
     private LocalDate scheduleDate;
 
     @Column(name = "start_time", nullable = true)
