@@ -25,8 +25,8 @@ class MemberServiceImplTest {
         EmailReqDto.EmailCheck dto = new EmailReqDto.EmailCheck();
         dto.setEmail("test2@example.com");
 
-        memberService.checkEmailDuplicate(dto);
-        assertDoesNotThrow(() -> memberService.checkEmailDuplicate(dto));
+        memberService.checkEmailDuplicate(dto.getEmail());
+        assertDoesNotThrow(() -> memberService.checkEmailDuplicate(dto.getEmail()));
     }
 
     @Test
@@ -36,7 +36,7 @@ class MemberServiceImplTest {
 
         MemberException exception = Assertions.assertThrows(
                 MemberException.class,
-                () -> memberService.checkEmailDuplicate(dto)
+                () -> memberService.checkEmailDuplicate(dto.getEmail())
         );
 
         Assertions.assertTrue(
