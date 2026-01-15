@@ -5,6 +5,7 @@ import com.example.todayserver.domain.schedule.dto.ScheduleCreateReq;
 import com.example.todayserver.domain.schedule.dto.SubScheduleCreateReq;
 import com.example.todayserver.domain.schedule.entity.Schedule;
 import com.example.todayserver.domain.schedule.entity.SubSchedule;
+import com.example.todayserver.domain.schedule.enums.ScheduleSource;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -29,6 +30,7 @@ public class ScheduleCreateConverter {
                 .member(member)
                 .scheduleType(req.scheduleType())
                 .mode(req.mode())
+                .source(ScheduleSource.LOCAL)
                 .title(req.title())
                 .memo(req.memo())
                 .color(req.bgColor())
