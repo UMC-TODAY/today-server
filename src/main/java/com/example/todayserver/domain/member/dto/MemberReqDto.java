@@ -20,4 +20,14 @@ public class MemberReqDto {
         @NotNull
         private LocalDate birth;
     }
+
+    @Data
+    public static class LoginDto{
+        @NotBlank
+        @Email
+        private String email;
+
+        @NotBlank
+        private String password;
+    }
 }

@@ -1,6 +1,7 @@
 package com.example.todayserver.domain.member.converter;
 
 import com.example.todayserver.domain.member.dto.MemberReqDto;
+import com.example.todayserver.domain.member.dto.MemberResDto;
 import com.example.todayserver.domain.member.entity.Member;
 import com.example.todayserver.domain.member.enums.SocialType;
 
@@ -17,6 +18,16 @@ public class MemberConverter {
                 .birth(dto.getBirth())
                 .nickname(nickname)
                 .socialType(SocialType.EMAIL)
+                .build();
+    }
+
+    public static MemberResDto.LoginDto toLoginResDto(
+            Member member,
+            String accessToken
+    ){
+        return MemberResDto.LoginDto.builder()
+                .memberId(member.getId())
+                .accessToken(accessToken)
                 .build();
     }
 }

@@ -2,6 +2,7 @@ package com.example.todayserver.domain.member.controller;
 
 import com.example.todayserver.domain.member.dto.EmailReqDto;
 import com.example.todayserver.domain.member.dto.MemberReqDto;
+import com.example.todayserver.domain.member.dto.MemberResDto;
 import com.example.todayserver.domain.member.service.EmailService;
 import com.example.todayserver.domain.member.service.MemberService;
 import com.example.todayserver.global.common.response.ApiResponse;
@@ -52,5 +53,10 @@ public class MemberController implements MemberControllerDocs {
     public ApiResponse<Void> emailSignup(@Valid @RequestBody MemberReqDto.SignupDto dto){
         memberService.emailSignup(dto);
         return ApiResponse.success(null);
+    }
+
+    @PostMapping("/auth/login/email")
+    public ApiResponse<MemberResDto.LoginDto> emailLogin(@Valid @RequestBody MemberReqDto.LoginDto dto){
+        return ApiResponse.success(memberService.emailLogin(dto));
     }
 }

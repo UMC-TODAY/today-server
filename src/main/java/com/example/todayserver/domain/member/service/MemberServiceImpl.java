@@ -1,10 +1,9 @@
 package com.example.todayserver.domain.member.service;
 
 import com.example.todayserver.domain.member.converter.MemberConverter;
-import com.example.todayserver.domain.member.dto.EmailReqDto;
 import com.example.todayserver.domain.member.dto.MemberReqDto;
+import com.example.todayserver.domain.member.dto.MemberResDto;
 import com.example.todayserver.domain.member.entity.Member;
-import com.example.todayserver.domain.member.enums.SocialType;
 import com.example.todayserver.domain.member.excpetion.AuthException;
 import com.example.todayserver.domain.member.excpetion.MemberException;
 import com.example.todayserver.domain.member.excpetion.code.AuthErrorCode;
@@ -12,6 +11,7 @@ import com.example.todayserver.domain.member.excpetion.code.MemberErrorCode;
 import com.example.todayserver.domain.member.repository.EmailCodeRepository;
 import com.example.todayserver.domain.member.repository.MemberRepository;
 import com.example.todayserver.domain.member.service.util.RandomNicknameGenerator;
+import com.example.todayserver.global.common.jwt.JwtUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -24,6 +24,7 @@ public class MemberServiceImpl implements MemberService{
     private final MemberRepository memberRepository;
     private final EmailCodeRepository emailCodeRepository;
     private final RandomNicknameGenerator nicknameGenerator;
+    private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -52,5 +53,18 @@ public class MemberServiceImpl implements MemberService{
                 //재시도
             }
         }
+    }
+
+    @Override
+    public MemberResDto.LoginDto emailLogin(MemberReqDto.LoginDto dto) {
+        Member member = memberRepository.findByEmail(dto.getEmail())
+                .orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND));
+
+        if (!passwordEncoder.matches(dto.getPassword(), member.getPassword())){
+            throw new MemberException(MemberErrorCode.INVALID_PW);
+        }
+
+        String accessToken = jwtUtil.createAccessToken(member);
+        return MemberConverter.toLoginResDto(member, accessToken);
     }
 }

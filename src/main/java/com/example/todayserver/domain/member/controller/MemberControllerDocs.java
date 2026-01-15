@@ -2,6 +2,7 @@ package com.example.todayserver.domain.member.controller;
 
 import com.example.todayserver.domain.member.dto.EmailReqDto;
 import com.example.todayserver.domain.member.dto.MemberReqDto;
+import com.example.todayserver.domain.member.dto.MemberResDto;
 import com.example.todayserver.global.common.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -42,7 +43,13 @@ public interface MemberControllerDocs {
 
     @Operation(
             summary = "이메일 회원가입",
-            description = "인증된 이메일로 회원가입울 잔행합니다."
+            description = "인증된 이메일로 회원가입을 진행합니다."
     )
     ApiResponse<Void> emailSignup(@Valid @RequestBody MemberReqDto.SignupDto dto);
+
+    @Operation(
+            summary = "이메일 로그인",
+            description = "이메일 로그인을 잔행합니다."
+    )
+    ApiResponse<MemberResDto.LoginDto> emailLogin(@Valid @RequestBody MemberReqDto.LoginDto dto);
 }
