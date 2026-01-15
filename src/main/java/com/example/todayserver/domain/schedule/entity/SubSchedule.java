@@ -25,6 +25,9 @@ public class SubSchedule extends BaseEntity {
     @Column(nullable = false, length = 10)
     private String color;
 
+    @Column(nullable = true, length = 10)
+    private String emoji;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "schedule_id", nullable = false)
     private Schedule schedule;

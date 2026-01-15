@@ -3,6 +3,7 @@ package com.example.todayserver.domain.schedule.entity;
 import com.example.todayserver.domain.member.entity.Member;
 import com.example.todayserver.domain.schedule.enums.Mode;
 import com.example.todayserver.domain.schedule.enums.RepeatType;
+import com.example.todayserver.domain.schedule.enums.ScheduleSource;
 import com.example.todayserver.domain.schedule.enums.ScheduleType;
 import com.example.todayserver.global.common.entity.BaseEntity;
 import jakarta.persistence.*;
@@ -34,6 +35,10 @@ public class Schedule extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private Mode mode;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "source", nullable = false, length = 20)
+    private ScheduleSource source;
+
     @Column(nullable = false, length = 100)
     private String title;
 
@@ -46,7 +51,7 @@ public class Schedule extends BaseEntity {
     @Column(nullable = true, length = 10)
     private String emoji;
 
-    @Column(name = "schedule_date", nullable = false)
+    @Column(name = "schedule_date", nullable = true)
     private LocalDate scheduleDate;
 
     @Column(name = "start_time", nullable = true)
