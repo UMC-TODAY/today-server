@@ -19,9 +19,19 @@ public class TokenService {
     @Transactional
     public TokenDto issueTokens(Member member){
         String accessToken = jwtUtil.createAccessToken(member);
-        String refreshToken = jwtUtil.createRefreshToken(member);
+        String refreshTokenValue = jwtUtil.createRefreshToken(member);
+        RefreshToken refreshToken = refreshTokenRepository.findByMemberId(member.getId())
+                .map(rt -> {
+                    rt.update(refreshTokenValue);
+                    return rt;
+                })
+                .orElse(
+                        new RefreshToken(refreshTokenValue, member)
+                );
 
-        refreshTokenRepository.save(new RefreshToken(refreshToken, member));
-        return new TokenDto(accessToken, refreshToken);
+
+        refreshTokenRepository.save(refreshToken);
+
+        return new TokenDto(accessToken, refreshTokenValue);
     }
 }
