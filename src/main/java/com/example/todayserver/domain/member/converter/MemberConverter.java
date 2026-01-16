@@ -5,6 +5,7 @@ import com.example.todayserver.domain.member.dto.MemberResDto;
 import com.example.todayserver.domain.member.dto.TokenDto;
 import com.example.todayserver.domain.member.entity.Member;
 import com.example.todayserver.domain.member.enums.SocialType;
+import com.example.todayserver.global.oauth.info.OAuth2UserInfo;
 
 import java.util.Map;
 
@@ -37,15 +38,14 @@ public class MemberConverter {
 
     public static Member toOAuthMember(
             String email,
-            SocialType provider,
-            Map<String, Object> attributes
+            OAuth2UserInfo userInfo
     ){
         return Member.builder()
                 .email(email)
-                .nickname((String) attributes.get("name"))
-                .profileImage((String) attributes.get("picture"))
-                .socialType(provider)
-                .providerUserId((String) attributes.get("sub"))
+                .nickname(userInfo.getName())
+                .profileImage(userInfo.getProfileImage())
+                .socialType(userInfo.getProvider())
+                .providerUserId(userInfo.getProviderId())
                 .build();
     }
 }

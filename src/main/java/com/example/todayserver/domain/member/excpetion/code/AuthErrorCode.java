@@ -23,7 +23,11 @@ public enum AuthErrorCode implements BaseErrorCode {
 
     INVALID_EMAIL(HttpStatus.BAD_REQUEST,
             "EMAIL_VERIFY_400_3",
-            "인증되지 않은 이메일입니다.");
+            "인증되지 않은 이메일입니다."),
+
+    INVALID_SOCIAL_TYPE(HttpStatus.BAD_REQUEST,
+            "SOCIAL_TYPE_400",
+            "지원하지 않는 소셜 타입입니다.");
 
 
 
