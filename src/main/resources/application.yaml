@@ -39,7 +39,6 @@ spring:
             scope:
               - email
               - profile
-              - birth
 
 server:
   port: 8080
