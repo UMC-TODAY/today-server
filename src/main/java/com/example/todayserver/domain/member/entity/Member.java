@@ -3,13 +3,12 @@ package com.example.todayserver.domain.member.entity;
 import com.example.todayserver.domain.member.enums.SocialType;
 import com.example.todayserver.domain.member.enums.Status;
 import com.example.todayserver.global.common.entity.BaseEntity;
+import com.example.todayserver.global.oauth.info.OAuth2UserInfo;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
+import java.util.Map;
 
 @Entity
 @Builder
@@ -52,4 +51,7 @@ public class Member extends BaseEntity {
     @Column(name = "inactivate_date")
     private LocalDate inactivateDate;
 
+    public void updateFromOAuth(OAuth2UserInfo userInfo) {
+        this.profileImage = userInfo.getProfileImage();
+    }
 }
