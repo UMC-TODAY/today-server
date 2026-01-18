@@ -16,8 +16,8 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@Tag(name = "Member", description = "회원가입,정보 관련 API")
-public class MemberController implements MemberControllerDocs {
+@Tag(name = "Auth", description = "로그인, 인증 관련 API")
+public class AuthController implements AuthControllerDocs {
 
     private final MemberService memberService;
     private final EmailService emailService;
