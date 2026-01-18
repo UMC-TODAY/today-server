@@ -6,6 +6,7 @@ import com.example.todayserver.domain.member.excpetion.MemberException;
 import com.example.todayserver.domain.member.excpetion.code.MemberErrorCode;
 import com.example.todayserver.domain.member.repository.MemberRepository;
 import com.example.todayserver.domain.member.service.util.TokenService;
+import com.example.todayserver.global.common.jwt.CookieUtil;
 import com.example.todayserver.global.oauth.info.OAuth2UserInfo;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -19,6 +20,7 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationSu
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Map;
 
 @Slf4j
@@ -36,8 +38,6 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String registrationId = ((OAuth2AuthenticationToken) authentication).getAuthorizedClientRegistrationId();
         Map<String, Object> attributes = oAuth2User.getAttributes();
 
-        log.info("SocialType = {}", registrationId);
-        log.info("attributes = {}", attributes);
         OAuth2UserInfo userInfo = OAuth2UserInfoFactory.getOAuth2UserInfo(registrationId,attributes);
 
         Member member = memberRepository.findBySocialTypeAndProviderUserId(userInfo.getProvider(), userInfo.getProviderId())
@@ -45,8 +45,10 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         TokenDto tokenDto = tokenService.issueTokens(member);
 
+        CookieUtil.addCookie(response, "refreshToken", tokenDto.getRefreshToken(), (int) Duration.ofDays(1).toSeconds());
+
         response.sendRedirect(
-                "http://localhost:3000/oauth/success?token=" + tokenDto.getAccessToken()
+                "http://localhost:3000/oauth/success?accessToken=" + tokenDto.getAccessToken()
         );
     }
 }
