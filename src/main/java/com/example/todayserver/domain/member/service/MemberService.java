@@ -8,4 +8,5 @@ public interface MemberService {
     void checkEmailDuplicate(String email);
     void emailSignup(MemberReqDto.SignupDto dto);
     Member emailLogin(MemberReqDto.LoginDto dto);
+    void checkNicknameDuplicate(String nickname);
 }

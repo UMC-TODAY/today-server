@@ -19,7 +19,10 @@ public enum MemberErrorCode implements BaseErrorCode {
             "이미 가입된 이메일입니다."),
     DUPLICATE_SOCIAL(HttpStatus.BAD_REQUEST,
             "MEMBER400_1",
-            "다른 방식으로 가입된 이메일입니다.");
+            "다른 방식으로 가입된 이메일입니다."),
+    DUPLICATE_NICKNAME(HttpStatus.BAD_REQUEST,
+            "MEMBER400_2",
+            "이미 사용중인 닉네임입니다.");
 
     private final HttpStatus status;
     private final String code;

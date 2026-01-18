@@ -30,4 +30,10 @@ public class MemberReqDto {
         @NotBlank
         private String password;
     }
+
+    @Data
+    public static class Nickname{
+        @NotBlank
+        private String nickname;
+    }
 }
