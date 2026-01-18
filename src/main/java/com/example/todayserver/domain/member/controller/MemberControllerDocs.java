@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 public interface MemberControllerDocs {
     @Operation(
@@ -20,4 +21,10 @@ public interface MemberControllerDocs {
             description = "해당 id를 가진 사용자의 회원정보를 조회합니다."
     )
     ApiResponse<MemberResDto.MemberInfo> getMemberInfo(@PathVariable Long id);
+
+    @Operation(
+            summary = "내 정보 보기",
+            description = "내 회원정보를 조회합니다."
+    )
+    ApiResponse<MemberResDto.MemberInfo> getMyInfo(@RequestHeader("Authorization") String token);
 }

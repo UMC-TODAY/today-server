@@ -78,4 +78,11 @@ public class MemberServiceImpl implements MemberService {
                 .orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND));
         return MemberConverter.toMemberInfo(member);
     }
+
+    @Override
+    public MemberResDto.MemberInfo getMyInfo(String email) {
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND));
+        return MemberConverter.toMemberInfo(member);
+    }
 }
