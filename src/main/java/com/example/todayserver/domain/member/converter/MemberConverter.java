@@ -8,8 +8,6 @@ import com.example.todayserver.domain.member.enums.SocialType;
 import com.example.todayserver.domain.member.enums.Status;
 import com.example.todayserver.global.oauth.info.OAuth2UserInfo;
 
-import java.util.Map;
-
 public class MemberConverter {
 
     public static Member toMember(
@@ -47,6 +45,17 @@ public class MemberConverter {
                 .socialType(userInfo.getProvider())
                 .providerUserId(userInfo.getProviderId())
                 .status(Status.ACTIVATE)
+                .build();
+    }
+
+    public static MemberResDto.MemberInfo toMemberInfo(
+        Member member
+    ){
+        return MemberResDto.MemberInfo.builder()
+                .memberId(member.getId())
+                .email(member.getEmail())
+                .profileImage(member.getProfileImage())
+                .nickname(member.getNickname())
                 .build();
     }
 }

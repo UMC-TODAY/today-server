@@ -2,6 +2,7 @@ package com.example.todayserver.domain.member.service;
 
 import com.example.todayserver.domain.member.converter.MemberConverter;
 import com.example.todayserver.domain.member.dto.MemberReqDto;
+import com.example.todayserver.domain.member.dto.MemberResDto;
 import com.example.todayserver.domain.member.entity.Member;
 import com.example.todayserver.domain.member.excpetion.AuthException;
 import com.example.todayserver.domain.member.excpetion.MemberException;
@@ -69,5 +70,12 @@ public class MemberServiceImpl implements MemberService {
         if (memberRepository.existsByNickname(nickname)) {
             throw new MemberException(MemberErrorCode.DUPLICATE_NICKNAME);
         }
+    }
+
+    @Override
+    public MemberResDto.MemberInfo getMemberInfo(Long id) {
+        Member member = memberRepository.findById(id)
+                .orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND));
+        return MemberConverter.toMemberInfo(member);
     }
 }
