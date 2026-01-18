@@ -1,10 +1,10 @@
 package com.example.todayserver.domain.member.controller;
 
-import com.example.todayserver.domain.member.dto.EmailReqDto;
-import com.example.todayserver.domain.member.dto.MemberReqDto;
-import com.example.todayserver.domain.member.dto.MemberResDto;
+import com.example.todayserver.domain.member.dto.*;
 import com.example.todayserver.global.common.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -52,4 +52,17 @@ public interface MemberControllerDocs {
             description = "이메일 로그인을 잔행합니다."
     )
     ApiResponse<MemberResDto.LoginDto> emailLogin(@Valid @RequestBody MemberReqDto.LoginDto dto);
+
+    @Operation(
+            summary = "로그인 유지",
+            description = "리프레시 토큰으로 새 엑세스 토큰을 발급합니다."
+    )
+    ApiResponse<TokenDto> reissue(@Valid @RequestBody TokenReissueDto dto);
+
+    @Operation(
+            summary = "로그아웃",
+            description = "리프레시 토큰을 삭제합니다."
+    )
+    ApiResponse<Void> logout(@Valid @RequestBody TokenReissueDto dto,
+                             HttpServletRequest request, HttpServletResponse response);
 }

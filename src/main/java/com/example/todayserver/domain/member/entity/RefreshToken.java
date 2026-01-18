@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Builder
 @Getter
@@ -25,12 +27,21 @@ public class RefreshToken {
     @JoinColumn(name = "member_id", nullable = false, unique = true)
     private Member member;
 
-    public RefreshToken(String refreshToken, Member member){
-        this.refreshToken = refreshToken;
-        this.member = member;
+    @Column(name = "expire_date", nullable = false)
+    private LocalDateTime expireDate;
+
+    public boolean isExpired() {
+        return LocalDateTime.now().isAfter(expireDate);
     }
 
-    public void update(String refreshToken){
+    public RefreshToken(String refreshToken, Member member, LocalDateTime expireDate){
         this.refreshToken = refreshToken;
+        this.member = member;
+        this.expireDate = expireDate;
+    }
+
+    public void update(String refreshToken, LocalDateTime expireDate){
+        this.refreshToken = refreshToken;
+        this.expireDate = expireDate;
     }
 }
