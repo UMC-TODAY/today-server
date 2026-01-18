@@ -1,6 +1,7 @@
 package com.example.todayserver.domain.analysis.controller;
 
-import com.example.todayserver.domain.analysis.dto.response.WeeklyCompletionRes;
+import com.example.todayserver.domain.analysis.dto.response.TogetherDaysResponse;
+import com.example.todayserver.domain.analysis.dto.response.WeeklyCompletionResponse;
 import com.example.todayserver.domain.analysis.service.AnalysisService;
 import com.example.todayserver.domain.member.entity.Member;
 import com.example.todayserver.global.common.response.ApiResponse;
@@ -22,10 +23,19 @@ public class AnalysisController {
 
     @Operation(summary = "요일별 계획 대비 완료율 조회", description = "최근 3개월간 요일별 일정 완료율을 조회합니다.")
     @GetMapping("/weekly-completion-rate")
-    public ApiResponse<WeeklyCompletionRes> getWeeklyCompletionRate(
+    public ApiResponse<WeeklyCompletionResponse> getWeeklyCompletionRate(
             @AuthenticationPrincipal Member member) {
         
-        WeeklyCompletionRes response = analysisService.getWeeklyCompletionRate(member);
+        WeeklyCompletionResponse response = analysisService.getWeeklyCompletionRate(member);
         return ApiResponse.success("요일별 완료율 조회 성공", response);
+    }
+
+    @Operation(summary = "TODAY와 함께 하고 있어요", description = "가입일로부터 경과한 일수를 조회합니다.")
+    @GetMapping("/together-days")
+    public ApiResponse<TogetherDaysResponse> getTogetherDays(
+            @AuthenticationPrincipal Member member) {
+        
+        TogetherDaysResponse response = analysisService.getTogetherDays(member);
+        return ApiResponse.success("경과 일수 조회 성공", response);
     }
 }

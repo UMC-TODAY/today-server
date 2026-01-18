@@ -9,7 +9,7 @@ import java.util.List;
 @Getter
 @Builder
 @AllArgsConstructor
-public class WeeklyCompletionRes {
+public class WeeklyCompletionResponse {
 
     private List<DayCompletionRate> weeklyRates;
     private List<AnalysisMessage> analysisMessages;
