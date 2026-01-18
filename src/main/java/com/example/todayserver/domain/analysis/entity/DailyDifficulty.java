@@ -32,4 +32,9 @@ public class DailyDifficulty extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
+
+    // 난이도 수정 메서드
+    public void updateDifficultyLevel(Integer difficultyLevel) {
+        this.difficultyLevel = difficultyLevel;
+    }
 }

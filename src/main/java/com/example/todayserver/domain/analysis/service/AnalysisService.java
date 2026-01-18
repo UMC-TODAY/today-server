@@ -1,7 +1,12 @@
 package com.example.todayserver.domain.analysis.service;
 
+import com.example.todayserver.domain.analysis.dto.request.DifficultyRequest;
+import com.example.todayserver.domain.analysis.dto.response.DifficultyResponse;
 import com.example.todayserver.domain.analysis.dto.response.TogetherDaysResponse;
 import com.example.todayserver.domain.analysis.dto.response.WeeklyCompletionResponse;
+import com.example.todayserver.domain.analysis.entity.DailyDifficulty;
+import com.example.todayserver.domain.analysis.enums.DifficultyLevel;
+import com.example.todayserver.domain.analysis.repository.DailyDifficultyRepository;
 import com.example.todayserver.domain.member.entity.Member;
 import com.example.todayserver.domain.schedule.entity.Schedule;
 import com.example.todayserver.domain.schedule.enums.ScheduleType;
@@ -23,10 +28,9 @@ import java.util.stream.Collectors;
 public class AnalysisService {
 
     private final ScheduleRepository scheduleRepository;
+    private final DailyDifficultyRepository dailyDifficultyRepository;
 
-    /**
-     * 요일별 계획 대비 완료율 조회
-     */
+    //요일별 계획 대비 완료율 조회
     public WeeklyCompletionResponse getWeeklyCompletionRate(Member member) {
         // 최근 3개월 데이터 조회
         LocalDateTime endDate = LocalDateTime.now();
@@ -99,16 +103,12 @@ public class AnalysisService {
                 .build();
     }
 
-    /**
-     * 요일 한글 이름 반환
-     */
+    //요일 한글 이름 반환
     private String getDayName(DayOfWeek dayOfWeek) {
         return dayOfWeek.getDisplayName(TextStyle.FULL, Locale.KOREAN);
     }
 
-    /**
-     * 통계 계산
-     */
+    // 통계 계산
     private WeeklyCompletionResponse.Statistics calculateStatistics(List<Double> completionRates) {
         List<Double> nonZeroRates = completionRates.stream()
                 .filter(rate -> rate > 0)
@@ -139,9 +139,7 @@ public class AnalysisService {
                 .build();
     }
 
-    /**
-     * 분석 메시지 생성
-     */
+    // 분석 메시지 생성
     private List<WeeklyCompletionResponse.AnalysisMessage> generateAnalysisMessages(
             List<WeeklyCompletionResponse.DayCompletionRate> weeklyRates,
             WeeklyCompletionResponse.Statistics statistics) {
@@ -175,9 +173,7 @@ public class AnalysisService {
         return messages;
     }
 
-    /**
-     * TODAY와 함께 하고 있어요 (가입일로부터 경과 일수)
-     */
+    // TODAY와 함께 하고 있어요 (가입일로부터 경과 일수)
     public TogetherDaysResponse getTogetherDays(Member member) {
         LocalDate joinedDate = member.getCreatedAt().toLocalDate();
         LocalDate today = LocalDate.now();
@@ -192,6 +188,56 @@ public class AnalysisService {
                 .togetherDays(togetherDays)
                 .joinedAt(joinedDate.toString())
                 .message(message)
+                .build();
+    }
+
+    // 일정소화난이도 평가 등록
+    @Transactional
+    public DifficultyResponse.Create createDailyDifficulty(Member member, DifficultyRequest.Create request) {
+        // 이미 해당 날짜에 평가가 있는지 확인
+        if (dailyDifficultyRepository.existsByMemberAndDate(member, request.getDate())) {
+            throw new IllegalArgumentException("해당 날짜에 이미 난이도 평가가 존재합니다.");
+        }
+
+        // 난이도 레벨 검증 및 이름 가져오기
+        DifficultyLevel difficultyLevel = DifficultyLevel.fromLevel(request.getDifficultyLevel());
+
+        // 엔티티 생성 및 저장
+        DailyDifficulty dailyDifficulty = DailyDifficulty.builder()
+                .member(member)
+                .date(request.getDate())
+                .difficultyLevel(request.getDifficultyLevel())
+                .build();
+
+        DailyDifficulty saved = dailyDifficultyRepository.save(dailyDifficulty);
+
+        return DifficultyResponse.Create.builder()
+                .difficultyId(saved.getId())
+                .date(saved.getDate().toString())
+                .difficultyLevel(saved.getDifficultyLevel())
+                .difficultyName(difficultyLevel.getName())
+                .createdAt(saved.getCreatedAt())
+                .build();
+    }
+
+    // 일정소화난이도 평가 수정
+    @Transactional
+    public DifficultyResponse.Update updateDailyDifficulty(Member member, DifficultyRequest.Update request) {
+        // 해당 날짜의 평가 찾기
+        DailyDifficulty dailyDifficulty = dailyDifficultyRepository.findByMemberAndDate(member, request.getDate())
+                .orElseThrow(() -> new IllegalArgumentException("해당 날짜에 난이도 평가가 존재하지 않습니다."));
+
+        // 난이도 레벨 검증 및 이름 가져오기
+        DifficultyLevel difficultyLevel = DifficultyLevel.fromLevel(request.getDifficultyLevel());
+
+        // 난이도 수정
+        dailyDifficulty.updateDifficultyLevel(request.getDifficultyLevel());
+
+        return DifficultyResponse.Update.builder()
+                .date(dailyDifficulty.getDate().toString())
+                .difficultyLevel(dailyDifficulty.getDifficultyLevel())
+                .difficultyName(difficultyLevel.getName())
+                .updatedAt(dailyDifficulty.getUpdatedAt())
                 .build();
     }
 }

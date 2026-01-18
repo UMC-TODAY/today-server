@@ -1,5 +1,7 @@
 package com.example.todayserver.domain.analysis.controller;
 
+import com.example.todayserver.domain.analysis.dto.request.DifficultyRequest;
+import com.example.todayserver.domain.analysis.dto.response.DifficultyResponse;
 import com.example.todayserver.domain.analysis.dto.response.TogetherDaysResponse;
 import com.example.todayserver.domain.analysis.dto.response.WeeklyCompletionResponse;
 import com.example.todayserver.domain.analysis.service.AnalysisService;
@@ -7,11 +9,13 @@ import com.example.todayserver.domain.member.entity.Member;
 import com.example.todayserver.global.common.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
 
 @Tag(name = "분석", description = "일정 분석 및 통계 API")
 @RestController
@@ -37,5 +41,25 @@ public class AnalysisController {
         
         TogetherDaysResponse response = analysisService.getTogetherDays(member);
         return ApiResponse.success("경과 일수 조회 성공", response);
+    }
+
+    @Operation(summary = "일정소화난이도 평가 등록", description = "특정 날짜의 난이도를 평가합니다.")
+    @PostMapping("/difficulty")
+    public ApiResponse<DifficultyResponse.Create> createDailyDifficulty(
+            @AuthenticationPrincipal Member member,
+            @Valid @RequestBody DifficultyRequest.Create request) {
+        
+        DifficultyResponse.Create response = analysisService.createDailyDifficulty(member, request);
+        return ApiResponse.success("난이도 평가 등록 성공", response);
+    }
+
+    @Operation(summary = "일정소화난이도 평가 수정", description = "특정 날짜의 난이도 평가를 수정합니다.")
+    @PatchMapping("/difficulty")
+    public ApiResponse<DifficultyResponse.Update> updateDailyDifficulty(
+            @AuthenticationPrincipal Member member,
+            @Valid @RequestBody DifficultyRequest.Update request) {
+        
+        DifficultyResponse.Update response = analysisService.updateDailyDifficulty(member, request);
+        return ApiResponse.success("난이도 평가 수정 성공", response);
     }
 }
