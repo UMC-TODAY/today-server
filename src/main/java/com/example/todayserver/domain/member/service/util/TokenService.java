@@ -8,6 +8,7 @@ import com.example.todayserver.domain.member.excpetion.AuthException;
 import com.example.todayserver.domain.member.excpetion.code.AuthErrorCode;
 import com.example.todayserver.domain.member.repository.MemberRepository;
 import com.example.todayserver.domain.member.repository.RefreshTokenRepository;
+import com.example.todayserver.global.common.jwt.CookieUtil;
 import com.example.todayserver.global.common.jwt.JwtUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -49,6 +50,7 @@ public class TokenService {
                         .orElseThrow(() -> new AuthException(AuthErrorCode.TOKEN_NOT_FOUND));
 
         if (refreshToken.isExpired()){
+            refreshTokenRepository.delete(refreshToken);
             throw new AuthException(AuthErrorCode.INVALID_TOKEN);
         }
 
@@ -60,5 +62,12 @@ public class TokenService {
         refreshToken.update(newRefreshTokenValue, LocalDateTime.now().plusDays(1));
 
         return new TokenDto(accessToken, newRefreshTokenValue);
+    }
+
+    public void logout(TokenReissueDto dto){
+        String refreshTokenValue = dto.getRefreshToken();
+        RefreshToken refreshToken = refreshTokenRepository.findByRefreshToken(refreshTokenValue)
+                .orElseThrow(() -> new AuthException(AuthErrorCode.TOKEN_NOT_FOUND));
+        refreshTokenRepository.delete(refreshToken);
     }
 }
