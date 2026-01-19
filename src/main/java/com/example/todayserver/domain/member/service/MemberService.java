@@ -13,4 +13,5 @@ public interface MemberService {
     MemberResDto.MemberInfo getMemberInfo(Long id);
     MemberResDto.MemberInfo getMyInfo(String email);
     void withdraw(String email);
+    void updatePassword(String password, String email);
 }

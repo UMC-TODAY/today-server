@@ -1,8 +1,6 @@
 package com.example.todayserver.domain.member.dto;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -35,5 +33,12 @@ public class MemberReqDto {
     public static class Nickname{
         @NotBlank
         private String nickname;
+    }
+
+    @Data
+    public static class Password{
+        @Size(min = 8, max = 32)
+        @NotBlank
+        private String password;
     }
 }

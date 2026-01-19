@@ -4,6 +4,7 @@ import com.example.todayserver.domain.member.converter.MemberConverter;
 import com.example.todayserver.domain.member.dto.MemberReqDto;
 import com.example.todayserver.domain.member.dto.MemberResDto;
 import com.example.todayserver.domain.member.entity.Member;
+import com.example.todayserver.domain.member.enums.SocialType;
 import com.example.todayserver.domain.member.excpetion.AuthException;
 import com.example.todayserver.domain.member.excpetion.MemberException;
 import com.example.todayserver.domain.member.excpetion.code.AuthErrorCode;
@@ -98,5 +99,16 @@ public class MemberServiceImpl implements MemberService {
         Member member = memberRepository.findByEmail(email)
                 .orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND));
         memberRepository.delete(member);
+    }
+
+    @Transactional
+    @Override
+    public void updatePassword(String password, String email) {
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND));
+        if (!member.getSocialType().equals(SocialType.EMAIL)){
+            throw new MemberException(MemberErrorCode.NO_PASSWORD);
+        }
+        memberRepository.updatePassword(password, member.getId());
     }
 }

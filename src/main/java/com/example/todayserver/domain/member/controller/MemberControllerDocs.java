@@ -33,4 +33,10 @@ public interface MemberControllerDocs {
             description = "회원 탈퇴를 진행합니다."
     )
     ApiResponse<Void> withdraw(@RequestHeader("Authorization") String token);
+
+    @Operation(
+            summary = "비밀번호 재설정",
+            description = "비밀 번호를 변경합니다."
+    )
+    ApiResponse<Void> updatePassword(@RequestHeader("Authorization") String token, @Valid @RequestBody MemberReqDto.Password dto);
 }
