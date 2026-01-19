@@ -3,16 +3,16 @@ package com.example.todayserver.domain.member.service;
 import com.example.todayserver.domain.member.converter.MemberConverter;
 import com.example.todayserver.domain.member.dto.MemberReqDto;
 import com.example.todayserver.domain.member.dto.MemberResDto;
-import com.example.todayserver.domain.member.dto.TokenDto;
 import com.example.todayserver.domain.member.entity.Member;
+import com.example.todayserver.domain.member.enums.SocialType;
 import com.example.todayserver.domain.member.excpetion.AuthException;
 import com.example.todayserver.domain.member.excpetion.MemberException;
 import com.example.todayserver.domain.member.excpetion.code.AuthErrorCode;
 import com.example.todayserver.domain.member.excpetion.code.MemberErrorCode;
 import com.example.todayserver.domain.member.repository.EmailCodeRepository;
 import com.example.todayserver.domain.member.repository.MemberRepository;
+import com.example.todayserver.domain.member.service.util.MemberWithdrawService;
 import com.example.todayserver.domain.member.service.util.RandomNicknameGenerator;
-import com.example.todayserver.domain.member.service.util.TokenService;
 import com.example.todayserver.global.common.jwt.JwtUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -20,17 +20,20 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+
 @Service
 @RequiredArgsConstructor
-public class MemberServiceImpl implements MemberService{
+public class MemberServiceImpl implements MemberService {
     private final MemberRepository memberRepository;
     private final EmailCodeRepository emailCodeRepository;
     private final RandomNicknameGenerator nicknameGenerator;
     private final PasswordEncoder passwordEncoder;
+    private final MemberWithdrawService memberWithdrawService;
+    private final JwtUtil jwtUtil;
 
     @Override
     public void checkEmailDuplicate(String email) {
-        if (memberRepository.existsByEmail(email)){
+        if (memberRepository.existsByEmail(email)) {
             throw new MemberException(MemberErrorCode.EXIST_EMAIL);
         }
     }
@@ -40,10 +43,12 @@ public class MemberServiceImpl implements MemberService{
     public void emailSignup(MemberReqDto.SignupDto dto) {
         String email = dto.getEmail();
         checkEmailDuplicate(email);
-        if (!emailCodeRepository.existsByEmailAndVerifiedIsTrue(email)){
+        if (!emailCodeRepository.existsByEmailAndVerifiedIsTrue(email)) {
             throw new AuthException(AuthErrorCode.INVALID_EMAIL);
         }
-        while(true){
+        memberWithdrawService.checkWithdraw(email);
+
+        while (true) {
             String nickname = nicknameGenerator.generate();
             String salt = passwordEncoder.encode(dto.getPassword());
             try {
@@ -58,13 +63,62 @@ public class MemberServiceImpl implements MemberService{
 
     @Override
     public Member emailLogin(MemberReqDto.LoginDto dto) {
-        Member member = memberRepository.findByEmail(dto.getEmail())
-                .orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND));
+        Member member = getMemberByEmail(dto.getEmail());
 
-        if (!passwordEncoder.matches(dto.getPassword(), member.getPassword())){
+        if (!passwordEncoder.matches(dto.getPassword(), member.getPassword())) {
             throw new MemberException(MemberErrorCode.INVALID_PW);
         }
 
         return member;
+    }
+
+    @Override
+    public void checkNicknameDuplicate(String nickname) {
+        if (memberRepository.existsByNickname(nickname)) {
+            throw new MemberException(MemberErrorCode.DUPLICATE_NICKNAME);
+        }
+    }
+
+    @Override
+    public MemberResDto.MemberInfo getMemberInfo(Long id) {
+        Member member = memberRepository.findById(id)
+                .orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND));
+        return MemberConverter.toMemberInfo(member);
+    }
+
+    @Override
+    public MemberResDto.MemberInfo getMyInfo(String token) {
+        String email = getEmailByAccessToken(token);
+        Member member = getMemberByEmail(email);
+        return MemberConverter.toMemberInfo(member);
+    }
+
+    @Transactional
+    @Override
+    public void withdraw(String token) {
+        String email = getEmailByAccessToken(token);
+        Member member = getMemberByEmail(email);
+        memberRepository.delete(member);
+    }
+
+    @Transactional
+    @Override
+    public void updatePassword(String password, String token) {
+        String email = getEmailByAccessToken(token);
+        Member member = getMemberByEmail(email);
+        if (!member.getSocialType().equals(SocialType.EMAIL)){
+            throw new MemberException(MemberErrorCode.NO_PASSWORD);
+        }
+        memberRepository.updatePassword(password, member.getId());
+    }
+
+    private Member getMemberByEmail(String email) {
+        return memberRepository.findByEmail(email)
+                .orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND));
+    }
+
+    private String getEmailByAccessToken(String token) {
+        String accessToken = token.split(" ")[1];
+        return jwtUtil.getEmail(accessToken);
     }
 }

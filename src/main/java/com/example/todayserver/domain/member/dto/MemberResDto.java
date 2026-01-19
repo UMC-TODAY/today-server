@@ -11,4 +11,13 @@ public class MemberResDto {
         String accessToken;
         String refreshToken;
     }
+
+    @Data
+    @Builder
+    public static class MemberInfo{
+        Long memberId;
+        String nickname;
+        String profileImage;
+        String email;
+    }
 }

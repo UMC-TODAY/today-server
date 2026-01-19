@@ -6,13 +6,16 @@ import com.example.todayserver.global.common.entity.BaseEntity;
 import com.example.todayserver.global.oauth.info.OAuth2UserInfo;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDate;
-import java.util.Map;
 
 @Entity
 @Builder
 @Getter
+@SQLRestriction("status = 'ACTIVATE'")
+@SQLDelete(sql = "UPDATE member SET status = 'DELETED', inactivate_date = CURRENT_DATE WHERE id = ?")
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "member")
@@ -45,7 +48,7 @@ public class Member extends BaseEntity {
     private String providerUserId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status")
+    @Column(name = "status", nullable = false)
     private Status status = Status.ACTIVATE;
 
     @Column(name = "inactivate_date")

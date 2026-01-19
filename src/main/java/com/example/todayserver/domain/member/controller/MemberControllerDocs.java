@@ -1,68 +1,42 @@
 package com.example.todayserver.domain.member.controller;
 
-import com.example.todayserver.domain.member.dto.*;
+import com.example.todayserver.domain.member.dto.MemberReqDto;
+import com.example.todayserver.domain.member.dto.MemberResDto;
 import com.example.todayserver.global.common.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 public interface MemberControllerDocs {
+    @Operation(
+            summary = "닉네임 중복확인",
+            description = "해당 닉네임이 사용중인지 확인합니다."
+    )
+    ApiResponse<Void> checkNickname(@Valid @RequestBody MemberReqDto.Nickname dto);
 
     @Operation(
-            summary = "이메일 중복확인",
-            description = "해당 이메일로 가입된 계정이 있는지 확인합니다."
+            summary = "사용자 정보 보기",
+            description = "해당 id를 가진 사용자의 회원정보를 조회합니다."
     )
-    ApiResponse<Void> checkEmail(@Valid @RequestBody EmailReqDto.EmailCheck dto);
+    ApiResponse<MemberResDto.MemberInfo> getMemberInfo(@PathVariable Long id);
 
     @Operation(
-            summary = "이메일 인증코드 발송",
-            description = "해당 이메일로 인증코드 6자리를 발송합니다."
+            summary = "내 정보 보기",
+            description = "내 회원정보를 조회합니다."
     )
-    ApiResponse<Void> sendEmailVerification(@Valid @RequestBody EmailReqDto.EmailCheck dto);
+    ApiResponse<MemberResDto.MemberInfo> getMyInfo(@RequestHeader("Authorization") String token);
 
     @Operation(
-            summary = "이메일 인증코드 확인",
-            description = "인증코드가 유효한지 확인합니다."
+            summary = "회원 탈퇴",
+            description = "회원 탈퇴를 진행합니다."
     )
-    ApiResponse<Void> checkEmailVerification(@Valid @RequestBody EmailReqDto.EmailCode dto);
+    ApiResponse<Void> withdraw(@RequestHeader("Authorization") String token);
 
     @Operation(
-            summary = "비밀번호 재설정 인증코드 발송",
-            description = "해당 이메일로 인증코드 6자리를 발송합니다."
+            summary = "비밀번호 재설정",
+            description = "비밀 번호를 변경합니다."
     )
-    ApiResponse<Void> sendPasswordResetVerification(@Valid @RequestBody EmailReqDto.EmailCheck dto);
-
-    @Operation(
-            summary = "비밀번호 재설정 인증코드 확인",
-            description = "인증코드가 유효한지 확인합니다."
-    )
-    ApiResponse<Void> checkPasswordResetVerification(@Valid @RequestBody EmailReqDto.EmailCode dto);
-
-    @Operation(
-            summary = "이메일 회원가입",
-            description = "인증된 이메일로 회원가입을 진행합니다."
-    )
-    ApiResponse<Void> emailSignup(@Valid @RequestBody MemberReqDto.SignupDto dto);
-
-    @Operation(
-            summary = "이메일 로그인",
-            description = "이메일 로그인을 잔행합니다."
-    )
-    ApiResponse<MemberResDto.LoginDto> emailLogin(@Valid @RequestBody MemberReqDto.LoginDto dto);
-
-    @Operation(
-            summary = "로그인 유지",
-            description = "리프레시 토큰으로 새 엑세스 토큰을 발급합니다."
-    )
-    ApiResponse<TokenDto> reissue(@Valid @RequestBody TokenReissueDto dto);
-
-    @Operation(
-            summary = "로그아웃",
-            description = "리프레시 토큰을 삭제합니다."
-    )
-    ApiResponse<Void> logout(@Valid @RequestBody TokenReissueDto dto,
-                             HttpServletRequest request, HttpServletResponse response);
+    ApiResponse<Void> updatePassword(@RequestHeader("Authorization") String token, @Valid @RequestBody MemberReqDto.Password dto);
 }

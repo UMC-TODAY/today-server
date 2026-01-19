@@ -1,80 +1,48 @@
 package com.example.todayserver.domain.member.controller;
 
-import com.example.todayserver.domain.member.dto.*;
-import com.example.todayserver.domain.member.service.AuthService;
-import com.example.todayserver.domain.member.service.EmailService;
-import com.example.todayserver.domain.member.service.MemberService;
-import com.example.todayserver.domain.member.service.util.TokenService;
-import com.example.todayserver.global.common.jwt.CookieUtil;
+import com.example.todayserver.domain.member.dto.MemberReqDto;
+import com.example.todayserver.domain.member.dto.MemberResDto;
+import com.example.todayserver.domain.member.service.MemberServiceImpl;
+import com.example.todayserver.global.common.jwt.JwtUtil;
 import com.example.todayserver.global.common.response.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@Tag(name = "Member", description = "회원가입,정보 관련 API")
+@RequestMapping("/members")
+@Tag(name = "Member", description = "회원정보 관련 API")
 public class MemberController implements MemberControllerDocs {
 
-    private final MemberService memberService;
-    private final EmailService emailService;
-    private final AuthService authService;
-    private final TokenService tokenService;
+    private final MemberServiceImpl memberService;
 
-    @PostMapping("/members/email/check")
-    public ApiResponse<Void> checkEmail(@Valid @RequestBody EmailReqDto.EmailCheck dto) {
-        memberService.checkEmailDuplicate(dto.getEmail());
+    @PostMapping("/nickname/check")
+    public ApiResponse<Void> checkNickname(@Valid @RequestBody MemberReqDto.Nickname dto){
+        memberService.checkNicknameDuplicate(dto.getNickname());
         return ApiResponse.success(null);
     }
 
-    @PostMapping("/auth/email/verification-codes")
-    public ApiResponse<Void> sendEmailVerification(@Valid @RequestBody EmailReqDto.EmailCheck dto) {
-        emailService.sendVerificationEmail(dto.getEmail(), "email_code");
+    @GetMapping("/{id}")
+    public ApiResponse<MemberResDto.MemberInfo> getMemberInfo(@PathVariable Long id){
+        return ApiResponse.success(memberService.getMemberInfo(id));
+    }
+
+    @GetMapping("/me")
+    public ApiResponse<MemberResDto.MemberInfo> getMyInfo(@RequestHeader("Authorization") String token){
+        return ApiResponse.success(memberService.getMyInfo(token));
+    }
+
+    @PatchMapping("/withdraw")
+    public ApiResponse<Void> withdraw(@RequestHeader("Authorization") String token){
+        memberService.withdraw(token);
         return ApiResponse.success(null);
     }
 
-    @PostMapping("/auth/email/verification-codes/verify")
-    public ApiResponse<Void> checkEmailVerification(@Valid @RequestBody EmailReqDto.EmailCode dto){
-        emailService.checkEmailVerifyCode(dto.getEmail(), dto.getCode());
-        return ApiResponse.success(null);
-    }
-
-    @PostMapping("/members/password/verification-codes")
-    public ApiResponse<Void> sendPasswordResetVerification(@Valid @RequestBody EmailReqDto.EmailCheck dto){
-        emailService.sendVerificationEmail(dto.getEmail(), "password_code");
-        return ApiResponse.success(null);
-    }
-
-    @PostMapping("/members/password/verification-codes/verify")
-    public ApiResponse<Void> checkPasswordResetVerification(@Valid @RequestBody EmailReqDto.EmailCode dto){
-        emailService.checkEmailVerifyCode(dto.getEmail(), dto.getCode());
-        return ApiResponse.success(null);
-    }
-
-    @PostMapping("/auth/signup/email")
-    public ApiResponse<Void> emailSignup(@Valid @RequestBody MemberReqDto.SignupDto dto){
-        memberService.emailSignup(dto);
-        return ApiResponse.success(null);
-    }
-
-    @PostMapping("/auth/login/email")
-    public ApiResponse<MemberResDto.LoginDto> emailLogin(@Valid @RequestBody MemberReqDto.LoginDto dto){
-        return ApiResponse.success(authService.emailLogin(dto));
-    }
-
-    @PostMapping("/auth/token/reissue")
-    public ApiResponse<TokenDto> reissue(@Valid @RequestBody TokenReissueDto dto){
-        return ApiResponse.success(tokenService.reissueTokens(dto));
-    }
-
-    @PostMapping("/auth/logout")
-    public ApiResponse<Void> logout(@Valid @RequestBody TokenReissueDto dto,
-                                    HttpServletRequest request, HttpServletResponse response){
-        tokenService.logout(dto);
-        CookieUtil.deleteCookie(request, response, "refreshToken");
+    @PatchMapping("/password")
+    public ApiResponse<Void> updatePassword(@RequestHeader("Authorization") String token, @Valid @RequestBody MemberReqDto.Password dto){
+        memberService.updatePassword(dto.getPassword(), token);
         return ApiResponse.success(null);
     }
 }
