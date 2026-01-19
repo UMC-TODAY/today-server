@@ -1,7 +1,9 @@
 package com.example.todayserver.domain.analysis.controller;
 
 import com.example.todayserver.domain.analysis.dto.request.DifficultyRequest;
+import com.example.todayserver.domain.analysis.dto.request.FocusChecklistRequest;
 import com.example.todayserver.domain.analysis.dto.response.DifficultyResponse;
+import com.example.todayserver.domain.analysis.dto.response.FocusChecklistResponse;
 import com.example.todayserver.domain.analysis.dto.response.GrassMapResponse;
 import com.example.todayserver.domain.analysis.dto.response.TogetherDaysResponse;
 import com.example.todayserver.domain.analysis.dto.response.WeeklyCompletionResponse;
@@ -12,7 +14,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -71,5 +72,24 @@ public class AnalysisController {
         
         GrassMapResponse response = analysisService.getGrassMap(member);
         return ApiResponse.success("잔디맵 조회 성공", response);
+    }
+
+    @Operation(summary = "몰입준비 체크리스트 조회", description = "몰입을 위한 준비 체크리스트를 조회합니다.")
+    @GetMapping("/focus-checklist")
+    public ApiResponse<FocusChecklistResponse> getFocusChecklist(
+            @AuthenticationPrincipal Member member) {
+        
+        FocusChecklistResponse response = analysisService.getFocusChecklist(member);
+        return ApiResponse.success("체크리스트 조회 성공", response);
+    }
+
+    @Operation(summary = "몰입준비 체크리스트 항목 수정", description = "체크리스트 항목의 완료 상태를 수정합니다.")
+    @PatchMapping("/focus-checklist/{itemId}")
+    public ApiResponse<Void> updateFocusChecklistItem(
+            @PathVariable Long itemId,
+            @Valid @RequestBody FocusChecklistRequest request) {
+        
+        analysisService.updateFocusChecklistItem(itemId, request);
+        return ApiResponse.success("체크리스트 항목 수정 성공", null);
     }
 }

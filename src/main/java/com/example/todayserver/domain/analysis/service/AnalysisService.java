@@ -1,13 +1,17 @@
 package com.example.todayserver.domain.analysis.service;
 
 import com.example.todayserver.domain.analysis.dto.request.DifficultyRequest;
+import com.example.todayserver.domain.analysis.dto.request.FocusChecklistRequest;
 import com.example.todayserver.domain.analysis.dto.response.DifficultyResponse;
+import com.example.todayserver.domain.analysis.dto.response.FocusChecklistResponse;
 import com.example.todayserver.domain.analysis.dto.response.GrassMapResponse;
 import com.example.todayserver.domain.analysis.dto.response.TogetherDaysResponse;
 import com.example.todayserver.domain.analysis.dto.response.WeeklyCompletionResponse;
 import com.example.todayserver.domain.analysis.entity.DailyDifficulty;
+import com.example.todayserver.domain.analysis.entity.FocusChecklist;
 import com.example.todayserver.domain.analysis.enums.DifficultyLevel;
 import com.example.todayserver.domain.analysis.repository.DailyDifficultyRepository;
+import com.example.todayserver.domain.analysis.repository.FocusChecklistRepository;
 import com.example.todayserver.domain.member.entity.Member;
 import com.example.todayserver.domain.schedule.entity.Schedule;
 import com.example.todayserver.domain.schedule.enums.ScheduleType;
@@ -30,6 +34,15 @@ public class AnalysisService {
 
     private final ScheduleRepository scheduleRepository;
     private final DailyDifficultyRepository dailyDifficultyRepository;
+    private final FocusChecklistRepository focusChecklistRepository;
+
+    // 고정된 체크리스트 항목들
+    private static final List<String> DEFAULT_CHECKLIST_CONTENTS = List.of(
+            "필요한 참고 자료 탭만 열기",
+            "휴대폰 무음 및 뒤집기",
+            "물 또는 음료 준비하기",
+            "완료할 일정 정하기"
+    );
 
     //요일별 계획 대비 완료율 조회
     public WeeklyCompletionResponse getWeeklyCompletionRate(Member member) {
@@ -353,5 +366,62 @@ public class AnalysisService {
         if (completedCount <= 3) return 2;
         if (completedCount <= 5) return 3;
         return 4; // 6개 이상
+    }
+
+    // 몰입준비 체크리스트 조회
+    @Transactional
+    public FocusChecklistResponse getFocusChecklist(Member member) {
+        // 체크리스트 조회 또는 초기화
+        List<FocusChecklist> checklists = focusChecklistRepository.findByMemberOrderByIdAsc(member);
+        
+        // 체크리스트가 없으면 초기 생성
+        if (checklists.isEmpty()) {
+            checklists = initializeChecklist(member);
+        }
+
+        // 오늘 날짜와 다음 리셋 시간 계산
+        LocalDate today = LocalDate.now();
+        LocalDateTime nextReset = today.plusDays(1).atTime(6, 0, 0);
+
+        // Response 생성
+        List<FocusChecklistResponse.ChecklistItem> items = checklists.stream()
+                .map(checklist -> FocusChecklistResponse.ChecklistItem.builder()
+                        .itemId(checklist.getId())
+                        .content(checklist.getContent())
+                        .isCompleted(checklist.getIsCompleted())
+                        .build())
+                .toList();
+
+        return FocusChecklistResponse.builder()
+                .date(today.toString())
+                .nextResetAt(nextReset)
+                .items(items)
+                .build();
+    }
+
+    // 체크리스트 초기 생성
+    @Transactional
+    protected List<FocusChecklist> initializeChecklist(Member member) {
+        List<FocusChecklist> checklists = new ArrayList<>();
+        
+        for (String content : DEFAULT_CHECKLIST_CONTENTS) {
+            FocusChecklist checklist = FocusChecklist.builder()
+                    .content(content)
+                    .isCompleted(false)
+                    .member(member)
+                    .build();
+            checklists.add(focusChecklistRepository.save(checklist));
+        }
+        
+        return checklists;
+    }
+
+    // 체크리스트 항목 완료 상태 수정
+    @Transactional
+    public void updateFocusChecklistItem(Long itemId, FocusChecklistRequest request) {
+        FocusChecklist checklist = focusChecklistRepository.findById(itemId)
+                .orElseThrow(() -> new IllegalArgumentException("체크리스트 항목을 찾을 수 없습니다."));
+        
+        checklist.updateCompleted(request.getIsCompleted());
     }
 }

@@ -38,4 +38,9 @@ public class FocusChecklist {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
+
+    // 완료 상태 업데이트
+    public void updateCompleted(Boolean isCompleted) {
+        this.isCompleted = isCompleted;
+    }
 }
