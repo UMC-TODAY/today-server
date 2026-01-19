@@ -2,6 +2,7 @@ package com.example.todayserver.domain.analysis.controller;
 
 import com.example.todayserver.domain.analysis.dto.request.DifficultyRequest;
 import com.example.todayserver.domain.analysis.dto.response.DifficultyResponse;
+import com.example.todayserver.domain.analysis.dto.response.GrassMapResponse;
 import com.example.todayserver.domain.analysis.dto.response.TogetherDaysResponse;
 import com.example.todayserver.domain.analysis.dto.response.WeeklyCompletionResponse;
 import com.example.todayserver.domain.analysis.service.AnalysisService;
@@ -61,5 +62,14 @@ public class AnalysisController {
         
         DifficultyResponse.Update response = analysisService.updateDailyDifficulty(member, request);
         return ApiResponse.success("난이도 평가 수정 성공", response);
+    }
+
+    @Operation(summary = "잔디맵 조회 (최근 91일)", description = "최근 91일간 일정 완료 현황을 잔디맵 형태로 조회합니다.")
+    @GetMapping("/grass-map")
+    public ApiResponse<GrassMapResponse> getGrassMap(
+            @AuthenticationPrincipal Member member) {
+        
+        GrassMapResponse response = analysisService.getGrassMap(member);
+        return ApiResponse.success("잔디맵 조회 성공", response);
     }
 }

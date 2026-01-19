@@ -2,6 +2,7 @@ package com.example.todayserver.domain.analysis.service;
 
 import com.example.todayserver.domain.analysis.dto.request.DifficultyRequest;
 import com.example.todayserver.domain.analysis.dto.response.DifficultyResponse;
+import com.example.todayserver.domain.analysis.dto.response.GrassMapResponse;
 import com.example.todayserver.domain.analysis.dto.response.TogetherDaysResponse;
 import com.example.todayserver.domain.analysis.dto.response.WeeklyCompletionResponse;
 import com.example.todayserver.domain.analysis.entity.DailyDifficulty;
@@ -112,7 +113,7 @@ public class AnalysisService {
     private WeeklyCompletionResponse.Statistics calculateStatistics(List<Double> completionRates) {
         List<Double> nonZeroRates = completionRates.stream()
                 .filter(rate -> rate > 0)
-                .collect(Collectors.toList());
+                .toList();
 
         if (nonZeroRates.isEmpty()) {
             return WeeklyCompletionResponse.Statistics.builder()
@@ -159,7 +160,7 @@ public class AnalysisService {
         List<String> highCompletionDays = weeklyRates.stream()
                 .filter(rate -> rate.getCompletionRate() >= 70.0 && rate.getTotalCount() > 0)
                 .map(WeeklyCompletionResponse.DayCompletionRate::getDayName)
-                .collect(Collectors.toList());
+                .toList();
 
         if (!highCompletionDays.isEmpty()) {
             String daysString = String.join(", ", highCompletionDays);
@@ -239,5 +240,118 @@ public class AnalysisService {
                 .difficultyName(difficultyLevel.getName())
                 .updatedAt(dailyDifficulty.getUpdatedAt())
                 .build();
+    }
+
+    //잔디맵 (최근 91일 일정 처리 집계)
+    public GrassMapResponse getGrassMap(Member member) {
+        // 91일 기간 설정 (오늘부터 -90일)
+        LocalDate endDate = LocalDate.now();
+        LocalDate startDate = endDate.minusDays(90);
+
+        // Schedule 조회 (TASK + EVENT)
+        LocalDateTime startDateTime = startDate.atStartOfDay();
+        LocalDateTime endDateTime = endDate.atTime(23, 59, 59);
+
+        List<Schedule> taskSchedules = scheduleRepository.findByMemberIdAndScheduleTypeAndStartedAtBetween(
+                member.getId(),
+                ScheduleType.TASK,
+                startDateTime,
+                endDateTime
+        );
+
+        List<Schedule> eventSchedules = scheduleRepository.findByMemberIdAndScheduleTypeAndStartedAtBetween(
+                member.getId(),
+                ScheduleType.EVENT,
+                startDateTime,
+                endDateTime
+        );
+
+        List<Schedule> allSchedules = new ArrayList<>();
+        allSchedules.addAll(taskSchedules);
+        allSchedules.addAll(eventSchedules);
+
+        // 날짜별로 완료된 일정 수 집계
+        Map<LocalDate, Long> completedCountByDate = allSchedules.stream()
+                .filter(Schedule::isDone)
+                .collect(Collectors.groupingBy(
+                        schedule -> schedule.getStartedAt().toLocalDate(),
+                        Collectors.counting()
+                ));
+
+        // 91일 동안의 grass 데이터 생성
+        List<GrassMapResponse.Grass> grassList = new ArrayList<>();
+        int totalCompleted = 0;
+        int maxCompleted = 0;
+        int activeDays = 0;
+
+        for (int i = 0; i <= 90; i++) {
+            LocalDate date = startDate.plusDays(i);
+            int completedCount = completedCountByDate.getOrDefault(date, 0L).intValue();
+            int level = calculateLevel(completedCount);
+
+            if (completedCount > 0) {
+                activeDays++;
+            }
+            totalCompleted += completedCount;
+            maxCompleted = Math.max(maxCompleted, completedCount);
+
+            grassList.add(GrassMapResponse.Grass.builder()
+                    .date(date.toString())
+                    .dayOfWeek(date.getDayOfWeek().name())
+                    .completedCount(completedCount)
+                    .level(level)
+                    .build());
+        }
+
+        // 평균 계산
+        double averageCompleted = Math.round((double) totalCompleted / 91 * 100.0) / 100.0;
+
+        // Period
+        GrassMapResponse.Period period = GrassMapResponse.Period.builder()
+                .startDate(startDate.toString())
+                .endDate(endDate.toString())
+                .days(91)
+                .build();
+
+        // Grid
+        GrassMapResponse.Grid grid = GrassMapResponse.Grid.builder()
+                .rows(7)
+                .cols(13)
+                .size(91)
+                .build();
+
+        // Summary (추가해도 괜찮을 것 같은 정보 입니다 )
+        GrassMapResponse.Summary summary = GrassMapResponse.Summary.builder()
+                .totalCompletedCount(totalCompleted)
+                .maxCompletedCount(maxCompleted)
+                .averageCompletedCount(averageCompleted)
+                .activeDays(activeDays)
+                .build();
+
+        // LevelCriteria
+        GrassMapResponse.LevelCriteria levelCriteria = GrassMapResponse.LevelCriteria.builder()
+                .level0("0개")
+                .level1("1개")
+                .level2("2~3개")
+                .level3("4~5개")
+                .level4("6개 이상")
+                .build();
+
+        return GrassMapResponse.builder()
+                .period(period)
+                .grid(grid)
+                .grass(grassList)
+                .summary(summary)
+                .levelCriteria(levelCriteria)
+                .build();
+    }
+
+    // 완료 수에 따른 레벨 계산
+    private int calculateLevel(int completedCount) {
+        if (completedCount == 0) return 0;
+        if (completedCount == 1) return 1;
+        if (completedCount <= 3) return 2;
+        if (completedCount <= 5) return 3;
+        return 4; // 6개 이상
     }
 }
