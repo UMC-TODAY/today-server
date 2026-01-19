@@ -4,6 +4,8 @@ import com.example.todayserver.domain.member.repository.MemberRepository;
 import com.example.todayserver.domain.member.service.MemberService;
 import com.example.todayserver.global.common.jwt.JwtAuthFilter;
 import com.example.todayserver.global.common.jwt.JwtUtil;
+import com.example.todayserver.global.oauth.OAuth2SuccessHandler;
+import com.example.todayserver.global.oauth.OAuth2UserCustomService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,10 +30,11 @@ public class SecurityConfig {
             "/swagger-resources/**",
             "/v3/api-docs/**",
             "/auth/**",
+            "/oauth2/**"
     };
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, OAuth2UserCustomService oAuth2UserCustomService, OAuth2SuccessHandler oAuth2SuccessHandler) throws Exception {
         http
                 .authorizeHttpRequests(requests -> requests
                         .requestMatchers(allowUris).permitAll()
@@ -41,11 +44,9 @@ public class SecurityConfig {
                 .formLogin(AbstractHttpConfigurer::disable)
                 .addFilterBefore(jwtAuthFilter(), UsernamePasswordAuthenticationFilter.class)
                 .csrf(AbstractHttpConfigurer::disable)
-                .logout(logout -> logout
-                        .logoutUrl("/logout")
-                        .logoutSuccessUrl("/login?logout")
-                        .permitAll()
-                );
+                .oauth2Login(oauth2 -> oauth2
+                        .userInfoEndpoint(userInfo -> userInfo.userService(oAuth2UserCustomService))
+                        .successHandler(oAuth2SuccessHandler));
 
         return http.build();
     }
