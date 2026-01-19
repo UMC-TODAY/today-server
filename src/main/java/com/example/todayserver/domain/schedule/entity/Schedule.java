@@ -69,4 +69,10 @@ public class Schedule extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
+
+    //isDone의 상태를 업데이트 하기 위한 매서드
+    public void updateDone(boolean isDone) {
+        this.isDone = isDone;
+    }
+
 }
