@@ -57,4 +57,7 @@ public class Member extends BaseEntity {
     public void updateFromOAuth(OAuth2UserInfo userInfo) {
         this.profileImage = userInfo.getProfileImage();
     }
+
+    @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Preference preference;
 }

@@ -4,6 +4,7 @@ import com.example.todayserver.domain.member.dto.MemberReqDto;
 import com.example.todayserver.domain.member.dto.MemberResDto;
 import com.example.todayserver.domain.member.dto.TokenDto;
 import com.example.todayserver.domain.member.entity.Member;
+import com.example.todayserver.domain.member.entity.Preference;
 import com.example.todayserver.domain.member.enums.SocialType;
 import com.example.todayserver.domain.member.enums.Status;
 import com.example.todayserver.global.oauth.info.OAuth2UserInfo;
@@ -21,6 +22,8 @@ public class MemberConverter {
                 .birth(dto.getBirth())
                 .nickname(nickname)
                 .socialType(SocialType.EMAIL)
+                .status(Status.ACTIVATE)
+                .preference(Preference.builder().member(null).build())
                 .build();
     }
 
