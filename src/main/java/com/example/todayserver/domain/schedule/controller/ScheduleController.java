@@ -17,6 +17,11 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import com.example.todayserver.domain.schedule.dto.ScheduleStatusUpdateRequest;
 import com.example.todayserver.domain.schedule.dto.ScheduleStatusUpdateResponse;
+import com.example.todayserver.domain.schedule.dto.ScheduleSearchItemResponse;
+import org.springframework.format.annotation.DateTimeFormat;
+import java.time.LocalDate;
+import java.util.List;
+
 
 
 @Tag(name = "Schedule", description = "일정/할일 관련 API")
@@ -79,5 +84,23 @@ public class ScheduleController {
 
         return ApiResponse.success("상태가 업데이트되었습니다.", res);
     }
+
+    // 내 할 일을 조건(완료여부/카테고리/날짜/키워드)으로 필터링해서 목록으로 반환
+    @Operation(summary = "할일 필터링 및 검색", description = "조건에 따라 내 할 일 목록을 조회합니다.")
+    @GetMapping
+    public ApiResponse<List<ScheduleSearchItemResponse>> getSchedules(
+            @AuthenticationPrincipal(expression = "id") Long memberId,
+            @RequestParam(value = "is_done", required = false) Boolean isDone,
+            @RequestParam(value = "category", required = false) String category,
+            @RequestParam(value = "schedule_date", required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate scheduleDate,
+            @RequestParam(value = "keyword", required = false) String keyword
+    ) {
+        List<ScheduleSearchItemResponse> res =
+                scheduleService.getSchedules(memberId, isDone, category, scheduleDate, keyword);
+
+        return ApiResponse.success(res);
+    }
+
 
 }
