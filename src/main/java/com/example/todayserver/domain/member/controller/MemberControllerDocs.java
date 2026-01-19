@@ -27,4 +27,10 @@ public interface MemberControllerDocs {
             description = "내 회원정보를 조회합니다."
     )
     ApiResponse<MemberResDto.MemberInfo> getMyInfo(@RequestHeader("Authorization") String token);
+
+    @Operation(
+            summary = "회원 탈퇴",
+            description = "회원 탈퇴를 진행합니다."
+    )
+    ApiResponse<Void> withdraw(@RequestHeader("Authorization") String token);
 }

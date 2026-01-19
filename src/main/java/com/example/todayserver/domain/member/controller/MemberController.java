@@ -37,4 +37,12 @@ public class MemberController implements MemberControllerDocs {
         return ApiResponse.success(memberService.getMyInfo(email));
     }
 
+    @PatchMapping("/withdraw")
+    public ApiResponse<Void> withdraw(@RequestHeader("Authorization") String token){
+        String accessToken = token.split(" ")[1];
+        String email = jwtUtil.getEmail(accessToken);
+        memberService.withdraw(email);
+        return ApiResponse.success(null);
+    }
+
 }

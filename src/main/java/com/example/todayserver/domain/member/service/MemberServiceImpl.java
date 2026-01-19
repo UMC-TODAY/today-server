@@ -85,4 +85,12 @@ public class MemberServiceImpl implements MemberService {
                 .orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND));
         return MemberConverter.toMemberInfo(member);
     }
+
+    @Transactional
+    @Override
+    public void withdraw(String email) {
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND));
+        memberRepository.delete(member);
+    }
 }

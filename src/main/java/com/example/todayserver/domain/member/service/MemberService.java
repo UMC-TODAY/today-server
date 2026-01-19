@@ -12,4 +12,5 @@ public interface MemberService {
     void checkNicknameDuplicate(String nickname);
     MemberResDto.MemberInfo getMemberInfo(Long id);
     MemberResDto.MemberInfo getMyInfo(String email);
+    void withdraw(String email);
 }
