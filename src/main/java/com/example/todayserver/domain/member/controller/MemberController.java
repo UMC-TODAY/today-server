@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 public class MemberController implements MemberControllerDocs {
 
     private final MemberServiceImpl memberService;
-    private final JwtUtil jwtUtil;
 
     @PostMapping("/nickname/check")
     public ApiResponse<Void> checkNickname(@Valid @RequestBody MemberReqDto.Nickname dto){
@@ -32,27 +31,18 @@ public class MemberController implements MemberControllerDocs {
 
     @GetMapping("/me")
     public ApiResponse<MemberResDto.MemberInfo> getMyInfo(@RequestHeader("Authorization") String token){
-        String email = getEmailByAccessToken(token);
-        return ApiResponse.success(memberService.getMyInfo(email));
+        return ApiResponse.success(memberService.getMyInfo(token));
     }
 
     @PatchMapping("/withdraw")
     public ApiResponse<Void> withdraw(@RequestHeader("Authorization") String token){
-        String email = getEmailByAccessToken(token);
-        memberService.withdraw(email);
+        memberService.withdraw(token);
         return ApiResponse.success(null);
     }
 
     @PatchMapping("/password")
     public ApiResponse<Void> updatePassword(@RequestHeader("Authorization") String token, @Valid @RequestBody MemberReqDto.Password dto){
-        String email = getEmailByAccessToken(token);
-        memberService.updatePassword(dto.getPassword(), email);
+        memberService.updatePassword(dto.getPassword(), token);
         return ApiResponse.success(null);
     }
-
-    private String getEmailByAccessToken(String token) {
-        String accessToken = token.split(" ")[1];
-        return jwtUtil.getEmail(accessToken);
-    }
-
 }

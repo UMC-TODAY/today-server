@@ -13,13 +13,13 @@ import com.example.todayserver.domain.member.repository.EmailCodeRepository;
 import com.example.todayserver.domain.member.repository.MemberRepository;
 import com.example.todayserver.domain.member.service.util.MemberWithdrawService;
 import com.example.todayserver.domain.member.service.util.RandomNicknameGenerator;
+import com.example.todayserver.global.common.jwt.JwtUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +29,7 @@ public class MemberServiceImpl implements MemberService {
     private final RandomNicknameGenerator nicknameGenerator;
     private final PasswordEncoder passwordEncoder;
     private final MemberWithdrawService memberWithdrawService;
+    private final JwtUtil jwtUtil;
 
     @Override
     public void checkEmailDuplicate(String email) {
@@ -62,8 +63,7 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public Member emailLogin(MemberReqDto.LoginDto dto) {
-        Member member = memberRepository.findByEmail(dto.getEmail())
-                .orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND));
+        Member member = getMemberByEmail(dto.getEmail());
 
         if (!passwordEncoder.matches(dto.getPassword(), member.getPassword())) {
             throw new MemberException(MemberErrorCode.INVALID_PW);
@@ -87,28 +87,38 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public MemberResDto.MemberInfo getMyInfo(String email) {
-        Member member = memberRepository.findByEmail(email)
-                .orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND));
+    public MemberResDto.MemberInfo getMyInfo(String token) {
+        String email = getEmailByAccessToken(token);
+        Member member = getMemberByEmail(email);
         return MemberConverter.toMemberInfo(member);
     }
 
     @Transactional
     @Override
-    public void withdraw(String email) {
-        Member member = memberRepository.findByEmail(email)
-                .orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND));
+    public void withdraw(String token) {
+        String email = getEmailByAccessToken(token);
+        Member member = getMemberByEmail(email);
         memberRepository.delete(member);
     }
 
     @Transactional
     @Override
-    public void updatePassword(String password, String email) {
-        Member member = memberRepository.findByEmail(email)
-                .orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND));
+    public void updatePassword(String password, String token) {
+        String email = getEmailByAccessToken(token);
+        Member member = getMemberByEmail(email);
         if (!member.getSocialType().equals(SocialType.EMAIL)){
             throw new MemberException(MemberErrorCode.NO_PASSWORD);
         }
         memberRepository.updatePassword(password, member.getId());
+    }
+
+    private Member getMemberByEmail(String email) {
+        return memberRepository.findByEmail(email)
+                .orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND));
+    }
+
+    private String getEmailByAccessToken(String token) {
+        String accessToken = token.split(" ")[1];
+        return jwtUtil.getEmail(accessToken);
     }
 }

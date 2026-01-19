@@ -11,7 +11,7 @@ public interface MemberService {
     Member emailLogin(MemberReqDto.LoginDto dto);
     void checkNicknameDuplicate(String nickname);
     MemberResDto.MemberInfo getMemberInfo(Long id);
-    MemberResDto.MemberInfo getMyInfo(String email);
-    void withdraw(String email);
-    void updatePassword(String password, String email);
+    MemberResDto.MemberInfo getMyInfo(String token);
+    void withdraw(String token);
+    void updatePassword(String password, String token);
 }
