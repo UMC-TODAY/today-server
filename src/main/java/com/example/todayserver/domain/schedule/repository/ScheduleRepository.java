@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
     // 월별 일정 데이터 전체 조회
@@ -42,4 +43,7 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
             LocalDateTime startedAtFrom,
             LocalDateTime startedAtTo
     );
+
+    // scheduleId와 memberId가 모두 일치하는 Schedule을 조회 (존재 + 소유권 검증을 한 번에 처리).
+    Optional<Schedule> findByIdAndMember_Id(Long id, Long memberId);
 }

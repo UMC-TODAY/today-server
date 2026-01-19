@@ -15,6 +15,9 @@ import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import com.example.todayserver.domain.schedule.dto.ScheduleStatusUpdateRequest;
+import com.example.todayserver.domain.schedule.dto.ScheduleStatusUpdateResponse;
+
 
 @Tag(name = "Schedule", description = "일정/할일 관련 API")
 @RestController
@@ -61,4 +64,20 @@ public class ScheduleController {
 
         return ApiResponse.success(res);
     }
+
+    // 일정/할 일의 완료 상태(is_done)를 요청값으로 변경, 변경된 결과(id, is_done)를 반환
+    @Operation(summary = "상태 변경 및 완료 처리", description = "일정/할 일의 완료 상태를 변경합니다.")
+    @PatchMapping("/{id}/status")
+    public ApiResponse<ScheduleStatusUpdateResponse> updateScheduleStatus(
+            @AuthenticationPrincipal(expression = "id") Long memberId,
+            @PathVariable Long id,
+            @RequestBody ScheduleStatusUpdateRequest req
+    ) {
+
+        ScheduleStatusUpdateResponse res =
+                scheduleService.updateScheduleStatus(memberId, id, req);
+
+        return ApiResponse.success("상태가 업데이트되었습니다.", res);
+    }
+
 }

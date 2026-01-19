@@ -17,6 +17,9 @@ import com.example.todayserver.domain.schedule.repository.ScheduleRepository;
 import com.example.todayserver.domain.schedule.repository.SubScheduleRepository;
 import com.example.todayserver.domain.schedule.validator.ScheduleCreateValidator;
 import com.example.todayserver.global.common.exception.CustomException;
+import com.example.todayserver.domain.schedule.dto.ScheduleStatusUpdateRequest;
+import com.example.todayserver.domain.schedule.dto.ScheduleStatusUpdateResponse;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -147,4 +150,17 @@ public class ScheduleService {
 
         return EventMonthlyCompletionRes.of(year, month, total, completed);
     }
+
+    // 로그인한 사용자(memberId)의 일정(scheduleId)을 찾아 요청값(is_done)으로 완료 상태를 변경
+    // 일정이 없거나 본인 소유가 아니면 예외를 발생시키고, 변경된 id/is_done 값을 응답 DTO로 반환
+    @Transactional
+    public ScheduleStatusUpdateResponse updateScheduleStatus(Long memberId, Long scheduleId, ScheduleStatusUpdateRequest req) {
+        Schedule schedule = scheduleRepository.findByIdAndMember_Id(scheduleId, memberId)
+                .orElseThrow(() -> new CustomException(MemberErrorCode.NOT_FOUND));
+
+        schedule.updateDone(req.is_done());
+
+        return new ScheduleStatusUpdateResponse(schedule.getId(), schedule.isDone());
+    }
+
 }
