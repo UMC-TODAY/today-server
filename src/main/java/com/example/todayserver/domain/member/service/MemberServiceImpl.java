@@ -10,12 +10,15 @@ import com.example.todayserver.domain.member.excpetion.code.AuthErrorCode;
 import com.example.todayserver.domain.member.excpetion.code.MemberErrorCode;
 import com.example.todayserver.domain.member.repository.EmailCodeRepository;
 import com.example.todayserver.domain.member.repository.MemberRepository;
+import com.example.todayserver.domain.member.service.util.MemberWithdrawService;
 import com.example.todayserver.domain.member.service.util.RandomNicknameGenerator;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +27,7 @@ public class MemberServiceImpl implements MemberService {
     private final EmailCodeRepository emailCodeRepository;
     private final RandomNicknameGenerator nicknameGenerator;
     private final PasswordEncoder passwordEncoder;
+    private final MemberWithdrawService memberWithdrawService;
 
     @Override
     public void checkEmailDuplicate(String email) {
@@ -40,6 +44,8 @@ public class MemberServiceImpl implements MemberService {
         if (!emailCodeRepository.existsByEmailAndVerifiedIsTrue(email)) {
             throw new AuthException(AuthErrorCode.INVALID_EMAIL);
         }
+        memberWithdrawService.checkWithdraw(email);
+
         while (true) {
             String nickname = nicknameGenerator.generate();
             String salt = passwordEncoder.encode(dto.getPassword());

@@ -15,7 +15,7 @@ import java.time.LocalDate;
 @Builder
 @Getter
 @SQLRestriction("status = 'ACTIVATE'")
-@SQLDelete(sql = "UPDATE member SET status = 'DELETED' WHERE id = ?")
+@SQLDelete(sql = "UPDATE member SET status = 'DELETED', inactivate_date = CURRENT_DATE WHERE id = ?")
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "member")

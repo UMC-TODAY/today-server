@@ -6,6 +6,7 @@
     import com.example.todayserver.domain.member.excpetion.MemberException;
     import com.example.todayserver.domain.member.excpetion.code.MemberErrorCode;
     import com.example.todayserver.domain.member.repository.MemberRepository;
+    import com.example.todayserver.domain.member.service.util.MemberWithdrawService;
     import com.example.todayserver.global.oauth.info.OAuth2UserInfo;
     import jakarta.transaction.Transactional;
     import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@
     public class OAuth2UserCustomService extends DefaultOAuth2UserService {
 
         private final MemberRepository memberRepository;
+        private final MemberWithdrawService memberWithdrawService;
 
         @Transactional
         @Override
@@ -35,6 +37,7 @@
             OAuthDto.ServiceDto oAuthDto = OAuth2UserInfoFactory.getOAuthUserInfoFromService(registrationId, attributes);
 
             Member member = saveOrUpdate(oAuthDto.getUserInfo());
+
             return new DefaultOAuth2User(
                     Collections.emptySet(),
                     oAuthDto.getUserInfo().getAttributes(),
@@ -43,6 +46,7 @@
         }
 
         private Member saveOrUpdate(OAuth2UserInfo userInfo){
+            memberWithdrawService.checkWithdraw(userInfo.getEmail());
             Member member = memberRepository.findBySocialTypeAndProviderUserId(
                     userInfo.getProvider(),
                     userInfo.getProviderId()
