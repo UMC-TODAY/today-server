@@ -30,7 +30,7 @@ public class Schedule extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private ScheduleType scheduleType;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     @Enumerated(EnumType.STRING)
     private Mode mode;
 
