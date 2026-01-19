@@ -19,6 +19,9 @@ import com.example.todayserver.domain.schedule.dto.ScheduleStatusUpdateRequest;
 import com.example.todayserver.domain.schedule.dto.ScheduleStatusUpdateResponse;
 import com.example.todayserver.domain.schedule.dto.ScheduleSearchItemResponse;
 import org.springframework.format.annotation.DateTimeFormat;
+import com.example.todayserver.domain.schedule.dto.ScheduleBulkDeleteRequest;
+import com.example.todayserver.domain.schedule.dto.ScheduleBulkDeleteResponse;
+
 import java.time.LocalDate;
 import java.util.List;
 
@@ -85,8 +88,8 @@ public class ScheduleController {
         return ApiResponse.success("상태가 업데이트되었습니다.", res);
     }
 
-    // 내 할 일을 조건(완료여부/카테고리/날짜/키워드)으로 필터링해서 목록으로 반환
-    @Operation(summary = "할일 필터링 및 검색", description = "조건에 따라 내 할 일 목록을 조회합니다.")
+    // 내 일정/할 일을 조건(완료여부/카테고리/날짜/키워드)으로 필터링해서 목록으로 반환
+    @Operation(summary = "할일/일정 필터링 및 검색", description = "조건에 따라 내 일정/할일 목록을 조회합니다.")
     @GetMapping
     public ApiResponse<List<ScheduleSearchItemResponse>> getSchedules(
             @AuthenticationPrincipal(expression = "id") Long memberId,
@@ -101,6 +104,19 @@ public class ScheduleController {
 
         return ApiResponse.success(res);
     }
+
+    // 요청한 id 목록에 해당하는 일정/할 일을 일괄 삭제하고 삭제된 개수와 메시지를 반환
+    @Operation(summary = "할일/일정 일괄 삭제", description = "선택한 일정/할 일을 한 번에 삭제합니다.")
+    @DeleteMapping("/bulk")
+    public ApiResponse<ScheduleBulkDeleteResponse> deleteSchedulesBulk(
+            @AuthenticationPrincipal(expression = "id") Long memberId,
+            @RequestBody ScheduleBulkDeleteRequest req
+    ) {
+        ScheduleBulkDeleteResponse res = scheduleService.deleteSchedulesBulk(memberId, req);
+
+        return ApiResponse.success("요청하신 " + res.getDeleted_count() + "개의 항목이 삭제되었습니다.", res);
+    }
+
 
 
 }

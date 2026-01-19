@@ -20,6 +20,9 @@ import com.example.todayserver.global.common.exception.CustomException;
 import com.example.todayserver.domain.schedule.dto.ScheduleStatusUpdateRequest;
 import com.example.todayserver.domain.schedule.dto.ScheduleStatusUpdateResponse;
 import com.example.todayserver.domain.schedule.dto.ScheduleSearchItemResponse;
+import com.example.todayserver.domain.schedule.dto.ScheduleBulkDeleteRequest;
+import com.example.todayserver.domain.schedule.dto.ScheduleBulkDeleteResponse;
+
 
 
 import lombok.RequiredArgsConstructor;
@@ -214,6 +217,19 @@ public class ScheduleService {
                 ))
                 .toList();
     }
+
+    // 요청한 id 목록에 대해 본인 소유인 schedule만 일괄 삭제하고 삭제된 개수를 반환
+    @Transactional
+    public ScheduleBulkDeleteResponse deleteSchedulesBulk(Long memberId, ScheduleBulkDeleteRequest req) {
+        if (req.getIds() == null || req.getIds().isEmpty()) {
+            return new ScheduleBulkDeleteResponse(0);
+        }
+
+        int deleted = scheduleRepository.deleteAllByMemberIdAndIdIn(memberId, req.getIds());
+
+        return new ScheduleBulkDeleteResponse(deleted);
+    }
+
 
 
 }

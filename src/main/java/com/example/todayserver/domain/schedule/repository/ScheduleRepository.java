@@ -6,6 +6,8 @@ import com.example.todayserver.domain.schedule.enums.ScheduleType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -68,5 +70,16 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
             @Param("fromDt") LocalDateTime fromDt,
             @Param("toDt") LocalDateTime toDt
     );
+
+    // 요청한 id 목록 중 본인(memberId) 소유인 schedule만 삭제하고 삭제된 개수를 반환
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Transactional
+    @Query("""
+    delete from Schedule s
+    where s.member.id = :memberId
+      and s.id in :ids
+    """)
+    int deleteAllByMemberIdAndIdIn(@Param("memberId") Long memberId, @Param("ids") List<Long> ids);
+
 
 }
