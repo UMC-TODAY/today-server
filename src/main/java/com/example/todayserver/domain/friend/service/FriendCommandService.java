@@ -32,11 +32,10 @@ public class FriendCommandService {
         // 이미 보낸 요청이 있는지 확인
         Optional<Friend> existingFriend = friendRepository.findByRequesterAndReceiver(requester, receiver);
 
-        // FriendCommandService.java (임시 테스트용)
         if (existingFriend.isPresent()) {
-            // 기존에는 삭제(취소)였지만, 테스트를 위해 수락으로 잠시 변경!
-            existingFriend.get().acceptRequest();
-            return "강제 수락 완료!";
+            // 이미 존재한다면 (상태가 PENDING 대기 일 때만 취소 가능하게 설정하거나 전체 삭제)
+            friendRepository.delete(existingFriend.get());
+            return "친구 요청 취소 완료";
 
         } else {
             // 존재하지 않는다면 새로 요청

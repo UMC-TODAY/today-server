@@ -28,6 +28,7 @@ public class SecurityConfig {
             "/swagger-resources/**",
             "/v3/api-docs/**",
             "/auth/**",
+            "/oauth2/**"
     };
 
     @Bean
