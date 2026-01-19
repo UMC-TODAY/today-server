@@ -16,7 +16,19 @@ public enum MemberErrorCode implements BaseErrorCode {
                     "비밀번호가 올바르지 않습니다."),
     EXIST_EMAIL(HttpStatus.BAD_REQUEST,
             "EMAIL_VERIFY_400",
-            "이미 가입된 이메일입니다.");
+            "이미 가입된 이메일입니다."),
+    DUPLICATE_SOCIAL(HttpStatus.BAD_REQUEST,
+            "MEMBER400_1",
+            "다른 방식으로 가입된 이메일입니다."),
+    DUPLICATE_NICKNAME(HttpStatus.BAD_REQUEST,
+            "MEMBER400_2",
+            "이미 사용중인 닉네임입니다."),
+    WITHDRAW_EMAIL(HttpStatus.BAD_REQUEST,
+            "EMAIL_VERIFY_400_4",
+            "탈퇴한지 7일 이내인 계정으로 가입하실 수 없습니다."),
+    NO_PASSWORD(HttpStatus.BAD_REQUEST,
+            "PASSWORD_400",
+            "소셜 가입자는 비밀번호를 재설정 하실 수 없습니다.");
 
     private final HttpStatus status;
     private final String code;

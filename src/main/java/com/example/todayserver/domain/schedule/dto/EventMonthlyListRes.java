@@ -32,14 +32,11 @@ public record EventMonthlyListRes(
             @Schema(description = "완료 여부", example = "false")
             boolean isDone,
 
-            @Schema(description = "일정 날짜 (yyyy-MM-dd)", example = "2026-01-01")
-            String date,
+            @Schema(description = "일정 시작 일시 (yyyy-MM-dd HH:mm)", example = "2026-01-01 11:00")
+            String startedAt,
 
-            @Schema(description = "시작 시간 (HH:mm)", example = "11:00")
-            String startTime,
-
-            @Schema(description = "종료 시간 (HH:mm)", example = "13:00")
-            String endTime,
+            @Schema(description = "일정 종료 일시 (yyyy-MM-dd HH:mm)", example = "2026-01-01 13:00")
+            String endedAt,
 
             @Schema(description = "일정 출처", example = "GOOGLE")
             ScheduleSource source

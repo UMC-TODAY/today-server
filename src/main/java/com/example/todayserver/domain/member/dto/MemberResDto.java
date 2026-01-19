@@ -9,5 +9,15 @@ public class MemberResDto {
     public static class LoginDto{
         Long memberId;
         String accessToken;
+        String refreshToken;
+    }
+
+    @Data
+    @Builder
+    public static class MemberInfo{
+        Long memberId;
+        String nickname;
+        String profileImage;
+        String email;
     }
 }
