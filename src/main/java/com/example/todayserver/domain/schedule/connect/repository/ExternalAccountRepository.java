@@ -6,6 +6,7 @@ import com.example.todayserver.domain.schedule.connect.enums.ExternalAccountStat
 import com.example.todayserver.domain.schedule.connect.enums.ExternalProvider;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface ExternalAccountRepository extends JpaRepository<ExternalAccount, Long> {
@@ -20,4 +21,7 @@ public interface ExternalAccountRepository extends JpaRepository<ExternalAccount
 
     Optional<ExternalAccount> findByProviderAndOauthState(ExternalProvider provider, String oauthState);
 
+    List<ExternalAccount> findAllByMemberId(Long memberId);
+
+    List<ExternalAccount> findAllByMemberIdAndStatus(Long memberId, ExternalAccountStatus status);
 }

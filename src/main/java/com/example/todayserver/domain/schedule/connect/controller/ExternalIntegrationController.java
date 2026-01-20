@@ -1,7 +1,10 @@
 package com.example.todayserver.domain.schedule.connect.controller;
 
 import com.example.todayserver.domain.schedule.connect.dto.GoogleAuthorizeUrlRes;
+import com.example.todayserver.domain.schedule.connect.dto.IntegrationStatusUpdateReq;
+import com.example.todayserver.domain.schedule.connect.dto.IntergrationStatueRes;
 import com.example.todayserver.domain.schedule.connect.dto.NotionAuthorizeUrlRes;
+import com.example.todayserver.domain.schedule.connect.service.ExternalIntergrationService;
 import com.example.todayserver.domain.schedule.connect.service.google.GoogleConnectService;
 import com.example.todayserver.domain.schedule.connect.service.notion.NotionConnectService;
 import com.example.todayserver.global.common.response.ApiResponse;
@@ -20,6 +23,34 @@ public class ExternalIntegrationController {
 
     private final GoogleConnectService googleConnectService;
     private final NotionConnectService notionConnectService;
+    private final ExternalIntergrationService externalIntergrationService;
+
+    @Operation(
+            summary = "외부 연동 상태 조회",
+            description = "현재 로그인한 사용자의 외부 서비스(Google/Notion/iCloud 등) 연동 여부를 조회합니다."
+    )
+    @GetMapping("/status")
+    public ApiResponse<IntergrationStatueRes> getIntegrationStatus(
+            @Parameter(hidden = true)
+            @AuthenticationPrincipal(expression = "id") Long memberId
+    ) {
+        IntergrationStatueRes res = externalIntergrationService.getIntegrationStatus(memberId);
+        return ApiResponse.success(res);
+    }
+
+    @Operation(
+            summary = "외부 연동 해제",
+            description = "사용자가 연동 해제를 요청하면 DISCONNECTED로 변경하고 토큰 정보를 제거합니다."
+    )
+    @PatchMapping("/status")
+    public ApiResponse<Void> updateIntegrationStatus(
+            @Parameter(hidden = true)
+            @AuthenticationPrincipal(expression = "id") Long memberId,
+            @RequestBody IntegrationStatusUpdateReq req
+    ) {
+        externalIntergrationService.disconnect(memberId, req);
+        return ApiResponse.success(null);
+    }
 
     @Operation(
             summary = "Google 캘린더 연동 인가 URL 발급",
