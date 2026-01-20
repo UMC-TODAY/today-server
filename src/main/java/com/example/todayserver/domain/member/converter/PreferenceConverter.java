@@ -1,16 +1,16 @@
 package com.example.todayserver.domain.member.converter;
 
-import com.example.todayserver.domain.member.dto.PreferenceResDto;
+import com.example.todayserver.domain.member.dto.PreferenceDto;
 import com.example.todayserver.domain.member.entity.Member;
 import com.example.todayserver.domain.member.entity.Preference;
 import com.example.todayserver.domain.member.enums.PrivacyScope;
 
 public class PreferenceConverter {
 
-    public static PreferenceResDto.Notification toNotification(
+    public static PreferenceDto.Notification toNotification(
             Preference preference
     ){
-        return PreferenceResDto.Notification.builder()
+        return PreferenceDto.Notification.builder()
                 .emailAlert(preference.isEmailAlert())
                 .kakaoAlert(preference.isKakaoAlert())
                 .reminderAlert(preference.isReminderAlert())

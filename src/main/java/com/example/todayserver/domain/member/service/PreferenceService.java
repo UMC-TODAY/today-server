@@ -1,7 +1,7 @@
 package com.example.todayserver.domain.member.service;
 
 import com.example.todayserver.domain.member.converter.PreferenceConverter;
-import com.example.todayserver.domain.member.dto.PreferenceResDto;
+import com.example.todayserver.domain.member.dto.PreferenceDto;
 import com.example.todayserver.domain.member.entity.Member;
 import com.example.todayserver.domain.member.entity.Preference;
 import com.example.todayserver.domain.member.excpetion.MemberException;
@@ -22,7 +22,7 @@ public class PreferenceService {
     private final MemberRepository memberRepository;
     private final PreferenceRepository preferenceRepository;
 
-    public PreferenceResDto.Notification getNotifications(String token){
+    public PreferenceDto.Notification getNotifications(String token){
         String email = getEmailByAccessToken(token);
         Member member = getMemberByEmail(email);
         Preference preference = preferenceRepository.findByMemberId(member.getId())
