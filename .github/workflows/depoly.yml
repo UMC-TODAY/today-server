@@ -55,7 +55,7 @@ jobs:
               -e MAIL_USERNAME="${{ secrets.MAIL_USERNAME }}" \
               -e MAIL_PASSWORD="${{ secrets.MAIL_PASSWORD }}" \
               -e SECRET_KEY="${{ secrets.SECRET_KEY }}" \
-              -e AWS_S3_BUCKET="${{ secrets.S3_BUCKET_NAME }}" \
-              -e AWS_ACCESS_KEY="${{ secrets.AWS_ACCESS_KEY }}" \
-              -e AWS_SECRET_KEY="${{ secrets.AWS_SECRET_KEY }}" \
+              -e CLOUD_ACCESS_KEY="${{ secrets.CLOUD_ACCESS_KEY }}" \
+              -e CLOUD_SECRET_KEY="${{ secrets.CLOUD_SECRET_KEY }}" \
+              -e S3_BUCKET_NAME="${{ secrets.S3_BUCKET_NAME }}" \
               ${{ secrets.DOCKERHUB_USERNAME }}/today-app
