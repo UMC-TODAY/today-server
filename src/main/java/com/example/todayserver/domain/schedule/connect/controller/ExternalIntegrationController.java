@@ -1,7 +1,9 @@
 package com.example.todayserver.domain.schedule.connect.controller;
 
 import com.example.todayserver.domain.schedule.connect.dto.GoogleAuthorizeUrlRes;
+import com.example.todayserver.domain.schedule.connect.dto.IntergrationStatueRes;
 import com.example.todayserver.domain.schedule.connect.dto.NotionAuthorizeUrlRes;
+import com.example.todayserver.domain.schedule.connect.service.ExternalIntergrationService;
 import com.example.todayserver.domain.schedule.connect.service.google.GoogleConnectService;
 import com.example.todayserver.domain.schedule.connect.service.notion.NotionConnectService;
 import com.example.todayserver.global.common.response.ApiResponse;
@@ -20,6 +22,20 @@ public class ExternalIntegrationController {
 
     private final GoogleConnectService googleConnectService;
     private final NotionConnectService notionConnectService;
+    private final ExternalIntergrationService externalIntergrationService;
+
+    @Operation(
+            summary = "외부 연동 상태 조회",
+            description = "현재 로그인한 사용자의 외부 서비스(Google/Notion/iCloud 등) 연동 여부를 조회합니다."
+    )
+    @GetMapping("/status")
+    public ApiResponse<IntergrationStatueRes> getIntegrationStatus(
+            @Parameter(hidden = true)
+            @AuthenticationPrincipal(expression = "id") Long memberId
+    ) {
+        IntergrationStatueRes res = externalIntergrationService.getIntegrationStatus(memberId);
+        return ApiResponse.success(res);
+    }
 
     @Operation(
             summary = "Google 캘린더 연동 인가 URL 발급",
