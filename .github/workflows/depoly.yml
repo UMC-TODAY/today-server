@@ -55,6 +55,9 @@ jobs:
               -e MAIL_USERNAME="${{ secrets.MAIL_USERNAME }}" \
               -e MAIL_PASSWORD="${{ secrets.MAIL_PASSWORD }}" \
               -e SECRET_KEY="${{ secrets.SECRET_KEY }}" \
+              -e CLOUD_ACCESS_KEY="${{ secrets.CLOUD_ACCESS_KEY }}" \
+              -e CLOUD_SECRET_KEY="${{ secrets.CLOUD_SECRET_KEY }}" \
+              -e S3_BUCKET_NAME="${{ secrets.S3_BUCKET_NAME }}" \
               -e GOOGLE_CLIENT_ID="${{ secrets.GOOGLE_CLIENT_ID }}" \
               -e GOOGLE_CLIENT_SECRET="${{ secrets.GOOGLE_CLIENT_SECRET }}" \
               -e NAVER_CLIENT_ID="${{ secrets.NAVER_CLIENT_ID }}" \
