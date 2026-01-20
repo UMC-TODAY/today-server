@@ -40,8 +40,8 @@ public class ExternalAccount extends BaseEntity {
     @Column(name = "refresh_token",  nullable = true)
     private String refreshToken;
 
-    @Column(name = "expires_at",  nullable = true)
-    private LocalDateTime expiresAt;
+    @Column(name = "expired_at",  nullable = true)
+    private LocalDateTime expiredAt;
 
     //계정 관련 추가 정보 (구글 userId, scope, 이메일 등)를 암호화해서 JSON 형태로 저장할 때 사용)
     @Lob
@@ -56,6 +56,12 @@ public class ExternalAccount extends BaseEntity {
     @Column(name = "last_synced_at")
     private LocalDateTime lastSyncedAt;
 
+    @Column(name = "oauth_state", length = 100)
+    private String oauthState;
+
+    @Column(name = "oauth_state_expired_at")
+    private LocalDateTime oauthStateExpiredAt;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
@@ -64,12 +70,12 @@ public class ExternalAccount extends BaseEntity {
     @Builder.Default
     private List<ExternalSource> externalSources = new ArrayList<>();
 
-    public void updateTokens(String accessToken, String refreshToken, LocalDateTime expiresAt) {
+    public void updateTokens(String accessToken, String refreshToken, LocalDateTime expiredAt) {
         this.accessToken = accessToken;
         if (refreshToken != null && !refreshToken.isBlank()) {
             this.refreshToken = refreshToken;
         }
-        this.expiresAt = expiresAt;
+        this.expiredAt = expiredAt;
     }
 
     public void updateStatus(ExternalAccountStatus status) {
@@ -79,4 +85,28 @@ public class ExternalAccount extends BaseEntity {
     public void updateLastSyncedAt(LocalDateTime lastSyncedAt) {
         this.lastSyncedAt = lastSyncedAt;
     }
+
+    public void issueOAuthState(String state, LocalDateTime expiredAt) {
+        this.oauthState = state;
+        this.oauthStateExpiredAt = expiredAt;
+        this.status = ExternalAccountStatus.ERROR;
+    }
+
+    public void clearOAuthState() {
+        this.oauthState = null;
+        this.oauthStateExpiredAt = null;
+    }
+
+    public boolean isOAuthStateExpired() {
+        return oauthStateExpiredAt != null
+                && LocalDateTime.now().isAfter(oauthStateExpiredAt);
+    }
+
+    public void activate(String accessToken, LocalDateTime expiredAt) {
+        this.accessToken = accessToken;
+        this.expiredAt = expiredAt;
+        this.status = ExternalAccountStatus.CONNECTED;
+        clearOAuthState();
+    }
+
 }
