@@ -22,6 +22,14 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
             LocalDateTime startedAtTo
     );
 
+    // 월별 일정 데이터 전체 조회 (허용된 source 목록 기반으로 조회)
+    List<Schedule> findByMemberIdAndScheduleTypeAndStartedAtBetweenAndSourceIn(
+            Long memberId,
+            ScheduleType scheduleType,
+            LocalDateTime startedAtFrom,
+            LocalDateTime startedAtTo,
+            List<ScheduleSource> sources
+    );
 
     // 월별 일정 데이터 필터 조회
     List<Schedule> findByMemberIdAndScheduleTypeAndStartedAtBetweenAndSource(
@@ -32,24 +40,27 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
             ScheduleSource source
     );
 
-    // 월별 총 일정 개수 조회
-    long countByMemberIdAndScheduleTypeAndStartedAtBetween(
+    // 월별 총 일정 개수 조회 (허용된 source 목록 기반으로 조회
+    long countByMemberIdAndScheduleTypeAndStartedAtBetweenAndSourceIn(
             Long memberId,
             ScheduleType scheduleType,
             LocalDateTime startedAtFrom,
-            LocalDateTime startedAtTo
+            LocalDateTime startedAtTo,
+            List<ScheduleSource> sources
     );
 
-    // 월별 완료된 일정 총 개수 조회
-    long countByMemberIdAndScheduleTypeAndStartedAtBetweenAndIsDoneTrue(
+    // 월별 완료된 일정 총 개수 조회 (허용된 source 목록 기반으로 조회)
+    long countByMemberIdAndScheduleTypeAndStartedAtBetweenAndIsDoneTrueAndSourceIn(
             Long memberId,
             ScheduleType scheduleType,
             LocalDateTime startedAtFrom,
-            LocalDateTime startedAtTo
+            LocalDateTime startedAtTo,
+            List<ScheduleSource> sources
     );
+
 
     // scheduleId와 memberId가 모두 일치하는 Schedule을 조회 (존재 + 소유권 검증을 한 번에 처리).
-    Optional<Schedule> findByIdAndMember_Id(Long id, Long memberId);
+    Optional<Schedule> findByIdAndMember_Id(Long id, Long memberId);/**/
 
     // 내 일정/할 일 목록을 조건(완료여부/타입/날짜/키워드)으로 필터링해서 조회
     @Query("""
