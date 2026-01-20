@@ -17,6 +17,14 @@ import com.example.todayserver.domain.schedule.repository.ScheduleRepository;
 import com.example.todayserver.domain.schedule.repository.SubScheduleRepository;
 import com.example.todayserver.domain.schedule.validator.ScheduleCreateValidator;
 import com.example.todayserver.global.common.exception.CustomException;
+import com.example.todayserver.domain.schedule.dto.ScheduleStatusUpdateRequest;
+import com.example.todayserver.domain.schedule.dto.ScheduleStatusUpdateResponse;
+import com.example.todayserver.domain.schedule.dto.ScheduleSearchItemResponse;
+import com.example.todayserver.domain.schedule.dto.ScheduleBulkDeleteRequest;
+import com.example.todayserver.domain.schedule.dto.ScheduleBulkDeleteResponse;
+
+
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -147,4 +155,81 @@ public class ScheduleService {
 
         return EventMonthlyCompletionRes.of(year, month, total, completed);
     }
+
+    // 로그인한 사용자(memberId)의 일정(scheduleId)을 찾아 요청값(is_done)으로 완료 상태를 변경
+    // 일정이 없거나 본인 소유가 아니면 예외를 발생시키고, 변경된 id/is_done 값을 응답 DTO로 반환
+    @Transactional
+    public ScheduleStatusUpdateResponse updateScheduleStatus(Long memberId, Long scheduleId, ScheduleStatusUpdateRequest req) {
+        Schedule schedule = scheduleRepository.findByIdAndMember_Id(scheduleId, memberId)
+                .orElseThrow(() -> new CustomException(MemberErrorCode.NOT_FOUND));
+
+        schedule.updateDone(req.is_done());
+
+        return new ScheduleStatusUpdateResponse(schedule.getId(), schedule.isDone());
+    }
+
+    // 내 일정/할 일을 조건(완료여부/타입/날짜/키워드)으로 조회해서 응답 DTO 리스트로 변환
+    @Transactional(readOnly = true)
+    public List<ScheduleSearchItemResponse> getSchedules(
+            Long memberId,
+            Boolean isDone,
+            String category,
+            LocalDate scheduleDate,
+            String keyword
+    ) {
+        ScheduleType scheduleType = null;
+
+        // category가 TASK/EVENT로 들어오면 ScheduleType 필터로 사용
+        if (category != null && !category.isBlank()) {
+            try {
+                scheduleType = ScheduleType.valueOf(category.toUpperCase());
+            } catch (IllegalArgumentException ignored) {
+                scheduleType = null;
+            }
+        }
+
+        LocalDateTime fromDt = null;
+        LocalDateTime toDt = null;
+
+        // scheduleDate가 있으면 해당 날짜(00:00:00~23:59:59) 기준으로 startedAt 범위를 생성
+        if (scheduleDate != null) {
+            fromDt = scheduleDate.atStartOfDay();
+            toDt = scheduleDate.atTime(23, 59, 59);
+        }
+
+        List<Schedule> schedules = scheduleRepository.searchSchedules(
+                memberId,
+                isDone,
+                scheduleType,
+                (keyword == null || keyword.isBlank()) ? null : keyword,
+                fromDt,
+                toDt
+        );
+
+        return schedules.stream()
+                .map(s -> new ScheduleSearchItemResponse(
+                        s.getId(),
+                        s.getTitle(),
+                        s.isDone(),
+                        s.getScheduleType().name(),
+                        s.getStartedAt() == null ? null : s.getStartedAt().toLocalDate(),
+                        s.getEmoji()
+                ))
+                .toList();
+    }
+
+    // 요청한 id 목록에 대해 본인 소유인 schedule만 일괄 삭제하고 삭제된 개수를 반환
+    @Transactional
+    public ScheduleBulkDeleteResponse deleteSchedulesBulk(Long memberId, ScheduleBulkDeleteRequest req) {
+        if (req.getIds() == null || req.getIds().isEmpty()) {
+            return new ScheduleBulkDeleteResponse(0);
+        }
+
+        int deleted = scheduleRepository.deleteAllByMemberIdAndIdIn(memberId, req.getIds());
+
+        return new ScheduleBulkDeleteResponse(deleted);
+    }
+
+
+
 }

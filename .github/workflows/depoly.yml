@@ -58,4 +58,8 @@ jobs:
               -e CLOUD_ACCESS_KEY="${{ secrets.CLOUD_ACCESS_KEY }}" \
               -e CLOUD_SECRET_KEY="${{ secrets.CLOUD_SECRET_KEY }}" \
               -e S3_BUCKET_NAME="${{ secrets.S3_BUCKET_NAME }}" \
+              -e GOOGLE_CLIENT_ID="${{ secrets.GOOGLE_CLIENT_ID }}" \
+              -e GOOGLE_CLIENT_SECRET="${{ secrets.GOOGLE_CLIENT_SECRET }}" \
+              -e NAVER_CLIENT_ID="${{ secrets.NAVER_CLIENT_ID }}" \
+              -e NAVER_CLIENT_SECRET="${{ secrets.NAVER_CLIENT_SECRET }}" \
               ${{ secrets.DOCKERHUB_USERNAME }}/today-app

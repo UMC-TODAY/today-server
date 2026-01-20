@@ -57,4 +57,5 @@ public class Member extends BaseEntity {
     public void updateFromOAuth(OAuth2UserInfo userInfo) {
         this.profileImage = userInfo.getProfileImage();
     }
+
 }
