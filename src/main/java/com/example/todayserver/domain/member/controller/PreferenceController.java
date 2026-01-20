@@ -30,4 +30,10 @@ public class PreferenceController implements PreferenceControllerDocs{
     public ApiResponse<PreferenceDto.Info> getInfo(@RequestHeader("Authorization") String token){
         return ApiResponse.success(preferenceService.getInfo(token));
     }
+
+    @PatchMapping("/info")
+    public ApiResponse<Void> updateInfo(@RequestHeader("Authorization") String token, PreferenceDto.Info dto){
+        preferenceService.updateInfo(token, dto);
+        return ApiResponse.success(null);
+    }
 }

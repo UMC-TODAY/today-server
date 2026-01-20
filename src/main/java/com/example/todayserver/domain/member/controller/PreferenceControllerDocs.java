@@ -24,4 +24,10 @@ public interface PreferenceControllerDocs {
             description = "개인정보 및 분석설정 정보를 조회합니다."
     )
     ApiResponse<PreferenceDto.Info> getInfo(@RequestHeader("Authorization") String token);
+
+    @Operation(
+            summary = "개인정보 및 분석설정 수정",
+            description = "개인정보 및 분석설정 정보를 수정합니다."
+    )
+    ApiResponse<Void> updateInfo(@RequestHeader("Authorization") String token, PreferenceDto.Info dto);
 }

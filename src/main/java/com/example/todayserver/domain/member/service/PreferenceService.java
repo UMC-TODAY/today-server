@@ -46,6 +46,13 @@ public class PreferenceService {
         return PreferenceConverter.toInfo(preference);
     }
 
+    @Transactional
+    public void updateInfo(String token, PreferenceDto.Info dto){
+        String email = getEmailByAccessToken(token);
+        Member member = getMemberByEmail(email);
+        preferenceRepository.updateInfo(dto.getPrivacyScope(), dto.getDataUse(), member);
+    }
+
     private Member getMemberByEmail(String email) {
         return memberRepository.findByEmail(email)
                 .orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND));
