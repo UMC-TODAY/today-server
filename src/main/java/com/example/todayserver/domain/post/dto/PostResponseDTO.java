@@ -66,6 +66,6 @@ public class PostResponseDTO {
             AuthorInfo author,
             String content,
             String createdAt,
-            Integer likeCount // 댓글 좋아요는 추후 CommentLike 엔티티와 연동
+            Integer likeCount
     ) {}
 }
