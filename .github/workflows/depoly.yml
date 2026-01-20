@@ -59,4 +59,9 @@ jobs:
               -e GOOGLE_CLIENT_SECRET="${{ secrets.GOOGLE_CLIENT_SECRET }}" \
               -e NAVER_CLIENT_ID="${{ secrets.NAVER_CLIENT_ID }}" \
               -e NAVER_CLIENT_SECRET="${{ secrets.NAVER_CLIENT_SECRET }}" \
+              -e GOOGLE_REDIRECT_URI="${{ secrets.GOOGLE_REDIRECT_URI }}" \
+              -e NOTION_CLIENT_ID="${{ secrets.NOTION_CLIENT_ID }}" \
+              -e NOTION_CLIENT_SECRET="${{ secrets.NOTION_CLIENT_SECRET }}" \
+              -e NOTION_REDIRECT_URI="${{ secrets.NOTION_REDIRECT_URI }}" \
+              -e NOTION_VERSION="${{ secrets.NOTION_VERSION }}" \
               ${{ secrets.DOCKERHUB_USERNAME }}/today-app
