@@ -34,6 +34,9 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ExternalSyncService {
 
+    private static final int DEFAULT_SYNC_MONTHS_BEFORE = 3; // 앞 3개월
+    private static final int DEFAULT_SYNC_MONTHS_AFTER = 3;  // 뒤 3개월
+
     private final ExternalAccountRepository externalAccountRepository;
     private final ExternalSourceRepository externalSourceRepository;
     private final ScheduleRepository scheduleRepository;
@@ -45,8 +48,18 @@ public class ExternalSyncService {
 
     @Transactional
     public void syncMonth(Long memberId, ExternalProvider provider, int year, int month) {
-        log.info("[ExternalSync][START] memberId={}, provider={}, year={}, month={}",
-                memberId, provider, year, month);
+        syncAroundMonths(memberId, provider, year, month, DEFAULT_SYNC_MONTHS_BEFORE, DEFAULT_SYNC_MONTHS_AFTER);
+    }
+
+    // 기준 월(YearMonth)을 중심으로 앞/뒤 N개월 범위를 동기화
+    @Transactional
+    public void syncAroundMonths(Long memberId, ExternalProvider provider, int year, int month, int monthsBefore, int monthsAfter) {
+        YearMonth base = YearMonth.of(year, month);
+        YearMonth startYm = base.minusMonths(monthsBefore);
+        YearMonth endYm = base.plusMonths(monthsAfter);
+
+        log.info("[ExternalSync][START] memberId={}, provider={}, base={}, range={}~{}",
+                memberId, provider, base, startYm, endYm);
 
         try {
             // 연동 계정 확인
@@ -79,10 +92,6 @@ public class ExternalSyncService {
                         ));
             }
 
-            // 이번 달 기간 계산
-            LocalDateTime from = YearMonth.of(year, month).atDay(1).atStartOfDay();
-            LocalDateTime to = YearMonth.of(year, month).atEndOfMonth().atTime(23, 59, 59);
-
             // 이벤트 조회 및 (중복 제외) 저장 로직
             List<ExternalSource> enabledSources = externalSourceRepository.findEnabledByAccount(account.getId());
 
@@ -91,52 +100,57 @@ public class ExternalSyncService {
             int skippedDuplicated = 0;
             int newEventsDetected = 0;
 
-            for (ExternalSource source : enabledSources) {
-                List<ExternalEventDto> events = client.fetchEvents(account, source, from, to);
-                fetchedEventsTotal += events.size();
+            // month loop: startYm ~ endYm
+            for (YearMonth ym = startYm; !ym.isAfter(endYm); ym = ym.plusMonths(1)) {
+                LocalDateTime from = ym.atDay(1).atStartOfDay();
+                LocalDateTime to = ym.atEndOfMonth().atTime(23, 59, 59);
 
-                for (ExternalEventDto event : events) {
-                    ScheduleExternalVersionType versionType = mapper.versionType();
+                for (ExternalSource source : enabledSources) {
+                    List<ExternalEventDto> events = client.fetchEvents(account, source, from, to);
+                    fetchedEventsTotal += events.size();
 
-                    boolean exists = scheduleExternalRepository
-                            .findByExternalSourceIdAndExternalEventIdAndVersionType(
-                                    source.getId(),
-                                    event.externalEventId(),
-                                    versionType
-                            )
-                            .isPresent();
+                    for (ExternalEventDto event : events) {
+                        ScheduleExternalVersionType versionType = mapper.versionType();
 
-                    if (exists) {
-                        skippedDuplicated++;
-                        continue;
+                        boolean exists = scheduleExternalRepository
+                                .findByExternalSourceIdAndExternalEventIdAndVersionType(
+                                        source.getId(),
+                                        event.externalEventId(),
+                                        versionType
+                                )
+                                .isPresent();
+
+                        if (exists) {
+                            skippedDuplicated++;
+                            continue;
+                        }
+
+                        newEventsDetected++;
+
+                        // 신규 이벤트 -> Schedule 저장
+                        Schedule schedule = mapper.toSchedule(event, member);
+                        scheduleRepository.save(schedule);
+
+                        ScheduleExternal mapping = mapper.toScheduleExternal(event, source, schedule);
+                        scheduleExternalRepository.save(mapping);
                     }
-
-                    newEventsDetected++;
-
-                    // 신규 이벤트 ->  Schedule 저장
-                     Schedule schedule = mapper.toSchedule(event, member);
-                     scheduleRepository.save(schedule);
-
-                     ScheduleExternal mapping = mapper.toScheduleExternal(event, source, schedule);
-                     scheduleExternalRepository.save(mapping);
                 }
             }
 
             // 마지막 동기화 시각 기록
             account.updateLastSyncedAt(LocalDateTime.now());
 
-            log.info("[ExternalSync][SUCCESS] memberId={}, provider={}, year={}, month={}, sources={}, events={}, newEvents={}, skippedDuplicated={}",
-                    memberId, provider, year, month, fetchedSources, fetchedEventsTotal, newEventsDetected, skippedDuplicated);
+            log.info("[ExternalSync][SUCCESS] memberId={}, provider={}, base={}, range={}~{}, sources={}, events={}, newEvents={}, skippedDuplicated={}",
+                    memberId, provider, base, startYm, endYm, fetchedSources, fetchedEventsTotal, newEventsDetected, skippedDuplicated);
 
         } catch (CustomException e) {
-            log.error("[ExternalSync][FAIL] memberId={}, provider={}, year={}, month={}, errorCode={}, message={}",
-                    memberId, provider, year, month, e.getErrorCode(), e.getMessage());
+            log.error("[ExternalSync][FAIL] memberId={}, provider={}, base={}, errorCode={}, message={}",
+                    memberId, provider, YearMonth.of(year, month), e.getErrorCode(), e.getMessage());
             throw e;
 
         } catch (Exception e) {
-            // 예상 못한 예외는 원인 추적을 위해 stacktrace 포함
-            log.error("[ExternalSync][FAIL] memberId={}, provider={}, year={}, month={}, unexpectedError={}",
-                    memberId, provider, year, month, e.toString(), e);
+            log.error("[ExternalSync][FAIL] memberId={}, provider={}, base={}, unexpectedError={}",
+                    memberId, provider, YearMonth.of(year, month), e.toString(), e);
             throw e;
         }
     }
