@@ -29,4 +29,13 @@ public class PreferenceConverter {
                 .member(member)
                 .build();
     }
+
+    public static PreferenceDto.Info toInfo(
+            Preference preference
+    ){
+        return PreferenceDto.Info.builder()
+                .privacyScope(preference.getPrivacyScope())
+                .dataUse(preference.isDataUse())
+                .build();
+    }
 }

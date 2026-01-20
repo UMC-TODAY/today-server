@@ -38,6 +38,14 @@ public class PreferenceService {
         preferenceRepository.updateNotifications(dto.getEmailAlert(), dto.getKakaoAlert(), dto.getReminderAlert(), member);
     }
 
+    public PreferenceDto.Info getInfo(String token){
+        String email = getEmailByAccessToken(token);
+        Member member = getMemberByEmail(email);
+        Preference preference = preferenceRepository.findByMemberId(member.getId())
+                .orElseThrow(() -> new PreferenceException(PreferenceErrorCode.NOT_FOUND));
+        return PreferenceConverter.toInfo(preference);
+    }
+
     private Member getMemberByEmail(String email) {
         return memberRepository.findByEmail(email)
                 .orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND));

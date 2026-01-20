@@ -9,7 +9,7 @@ public interface PreferenceControllerDocs {
 
     @Operation(
             summary = "알림 설정 보기",
-            description = "알림 설정 정보를 확인합니다."
+            description = "알림 설정 정보를 조회합니다."
     )
     ApiResponse<PreferenceDto.Notification> getNotifications(@RequestHeader("Authorization") String token);
 
@@ -18,4 +18,10 @@ public interface PreferenceControllerDocs {
             description = "알림 설정 정보를 수정합니다."
     )
     ApiResponse<Void> updateNotifications(@RequestHeader("Authorization") String token, PreferenceDto.Notification dto);
+
+    @Operation(
+            summary = "개인정보 및 분석설정 보기",
+            description = "개인정보 및 분석설정 정보를 조회합니다."
+    )
+    ApiResponse<PreferenceDto.Info> getInfo(@RequestHeader("Authorization") String token);
 }
