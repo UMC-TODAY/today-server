@@ -14,4 +14,5 @@ public interface MemberService {
     MemberResDto.MemberInfo getMyInfo(String token);
     void withdraw(String token);
     void updatePassword(String password, String token);
+    void updateProfile(String token, MemberReqDto.ProfileInfo dto);
 }

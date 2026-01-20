@@ -1,11 +1,14 @@
     package com.example.todayserver.global.oauth;
 
     import com.example.todayserver.domain.member.converter.MemberConverter;
+    import com.example.todayserver.domain.member.converter.PreferenceConverter;
     import com.example.todayserver.domain.member.dto.OAuthDto;
     import com.example.todayserver.domain.member.entity.Member;
+    import com.example.todayserver.domain.member.entity.Preference;
     import com.example.todayserver.domain.member.excpetion.MemberException;
     import com.example.todayserver.domain.member.excpetion.code.MemberErrorCode;
     import com.example.todayserver.domain.member.repository.MemberRepository;
+    import com.example.todayserver.domain.member.repository.PreferenceRepository;
     import com.example.todayserver.domain.member.service.util.MemberWithdrawService;
     import com.example.todayserver.global.oauth.info.OAuth2UserInfo;
     import jakarta.transaction.Transactional;
@@ -26,6 +29,7 @@
 
         private final MemberRepository memberRepository;
         private final MemberWithdrawService memberWithdrawService;
+        private final PreferenceRepository preferenceRepository;
 
         @Transactional
         @Override
@@ -45,11 +49,11 @@
             );
         }
 
-        private Member saveOrUpdate(OAuth2UserInfo userInfo){
+        private Member saveOrUpdate(OAuth2UserInfo userInfo) {
             memberWithdrawService.checkWithdraw(userInfo.getEmail());
             Member member = memberRepository.findBySocialTypeAndProviderUserId(
-                    userInfo.getProvider(),
-                    userInfo.getProviderId()
+                            userInfo.getProvider(),
+                            userInfo.getProviderId()
                     )
                     .map(m -> {
                         if (!m.getSocialType().equals(userInfo.getProvider())) {
@@ -61,6 +65,13 @@
                     .orElse(
                             MemberConverter.toOAuthMember(userInfo)
                     );
-            return memberRepository.save(member);
+                    preferenceRepository.findByMemberId(member.getId())
+                        .orElseGet(() ->
+                                preferenceRepository.save(
+                                        PreferenceConverter.newPreference(member)
+                                )
+                    );
+            memberRepository.save(member);
+            return member;
         }
     }

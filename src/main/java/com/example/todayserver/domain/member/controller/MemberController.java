@@ -8,6 +8,7 @@ import com.example.todayserver.global.common.response.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -43,6 +44,13 @@ public class MemberController implements MemberControllerDocs {
     @PatchMapping("/password")
     public ApiResponse<Void> updatePassword(@RequestHeader("Authorization") String token, @Valid @RequestBody MemberReqDto.Password dto){
         memberService.updatePassword(dto.getPassword(), token);
+        return ApiResponse.success(null);
+    }
+
+    @PatchMapping(value = "/profile",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponse<Void> updateProfile(@RequestHeader("Authorization") String token, @ModelAttribute MemberReqDto.ProfileInfo dto){
+        memberService.updateProfile(token, dto);
         return ApiResponse.success(null);
     }
 }

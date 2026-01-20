@@ -1,0 +1,8 @@
+cloud:
+  aws:
+    s3:
+      bucket: ${S3_BUCKET_NAME}
+    stack.auto: false
+    credentials:
+      accessKey: ${CLOUD_ACCESS_KEY}
+      secretKey: ${CLOUD_SECRET_KEY}
