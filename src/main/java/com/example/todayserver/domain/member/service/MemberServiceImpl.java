@@ -62,8 +62,12 @@ public class MemberServiceImpl implements MemberService {
             try {
                 Member member = MemberConverter.toMember(dto, salt, nickname);
                 memberRepository.save(member);
-                Preference preference = PreferenceConverter.newPreference(member);
-                preferenceRepository.save(preference);
+                preferenceRepository.findByMemberId(member.getId())
+                    .orElseGet(() ->
+                            preferenceRepository.save(
+                                    PreferenceConverter.newPreference(member)
+                            )
+                );
                 return;
             } catch (DataIntegrityViolationException e) {
                 //재시도

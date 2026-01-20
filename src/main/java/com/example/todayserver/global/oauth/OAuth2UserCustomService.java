@@ -49,11 +49,11 @@
             );
         }
 
-        private Member saveOrUpdate(OAuth2UserInfo userInfo){
+        private Member saveOrUpdate(OAuth2UserInfo userInfo) {
             memberWithdrawService.checkWithdraw(userInfo.getEmail());
             Member member = memberRepository.findBySocialTypeAndProviderUserId(
-                    userInfo.getProvider(),
-                    userInfo.getProviderId()
+                            userInfo.getProvider(),
+                            userInfo.getProviderId()
                     )
                     .map(m -> {
                         if (!m.getSocialType().equals(userInfo.getProvider())) {
@@ -65,9 +65,13 @@
                     .orElse(
                             MemberConverter.toOAuthMember(userInfo)
                     );
+                    preferenceRepository.findByMemberId(member.getId())
+                        .orElseGet(() ->
+                                preferenceRepository.save(
+                                        PreferenceConverter.newPreference(member)
+                                )
+                    );
             memberRepository.save(member);
-            Preference preference = PreferenceConverter.newPreference(member);
-            preferenceRepository.save(preference);
             return member;
         }
     }
