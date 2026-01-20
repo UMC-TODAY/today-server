@@ -8,8 +8,8 @@ public class PreferenceDto {
     @Data
     @Builder
     public static class Notification {
-        boolean reminderAlert;
-        boolean kakaoAlert;
-        boolean emailAlert;
+        Boolean reminderAlert;
+        Boolean kakaoAlert;
+        Boolean emailAlert;
     }
 }

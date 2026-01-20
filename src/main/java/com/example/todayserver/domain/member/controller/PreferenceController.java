@@ -1,14 +1,11 @@
 package com.example.todayserver.domain.member.controller;
 
-import com.example.todayserver.domain.member.dto.PreferenceResDto;
+import com.example.todayserver.domain.member.dto.PreferenceDto;
 import com.example.todayserver.domain.member.service.PreferenceService;
 import com.example.todayserver.global.common.response.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -19,7 +16,13 @@ public class PreferenceController implements PreferenceControllerDocs{
     private final PreferenceService preferenceService;
 
     @GetMapping("/notifications")
-    public ApiResponse<PreferenceResDto.Notification> getNotifications(@RequestHeader("Authorization") String token){
+    public ApiResponse<PreferenceDto.Notification> getNotifications(@RequestHeader("Authorization") String token){
         return ApiResponse.success(preferenceService.getNotifications(token));
+    }
+
+    @PatchMapping("/notifications")
+    public ApiResponse<Void> updateNotifications(@RequestHeader("Authorization") String token, PreferenceDto.Notification dto){
+        preferenceService.updateNotifications(token, dto);
+        return ApiResponse.success(null);
     }
 }

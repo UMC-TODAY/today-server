@@ -11,6 +11,7 @@ import com.example.todayserver.domain.member.excpetion.code.PreferenceErrorCode;
 import com.example.todayserver.domain.member.repository.MemberRepository;
 import com.example.todayserver.domain.member.repository.PreferenceRepository;
 import com.example.todayserver.global.common.jwt.JwtUtil;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +29,13 @@ public class PreferenceService {
         Preference preference = preferenceRepository.findByMemberId(member.getId())
                 .orElseThrow(() -> new PreferenceException(PreferenceErrorCode.NOT_FOUND));
         return PreferenceConverter.toNotification(preference);
+    }
+
+    @Transactional
+    public void updateNotifications(String token, PreferenceDto.Notification dto){
+        String email = getEmailByAccessToken(token);
+        Member member = getMemberByEmail(email);
+        preferenceRepository.updateNotifications(dto.getEmailAlert(), dto.getKakaoAlert(), dto.getReminderAlert(), member);
     }
 
     private Member getMemberByEmail(String email) {
