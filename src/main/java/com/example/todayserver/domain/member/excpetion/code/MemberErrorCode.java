@@ -31,7 +31,12 @@ public enum MemberErrorCode implements BaseErrorCode {
             "소셜 가입자는 비밀번호를 재설정 하실 수 없습니다."),
     FILE_TYPE_ERROR(HttpStatus.BAD_REQUEST,
             "FILE400",
-            "이미지 파일만 업로드 가능합니다.");
+            "이미지 파일만 업로드 가능합니다."),
+    IMAGE_UPLOAD_FAIL(
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            "FILE404",
+            "프로필 이미지 업로드에 실패하였습니다."
+    );
 
     private final HttpStatus status;
     private final String code;

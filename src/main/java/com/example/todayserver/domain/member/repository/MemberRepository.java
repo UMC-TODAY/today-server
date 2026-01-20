@@ -44,4 +44,13 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     """)
     void updatePassword(@Param("pw") String password,@Param("id") Long id);
 
+    @Modifying
+    @Query("""
+        UPDATE Member m
+        SET m.nickname = :nickname,
+            m.profileImage = :profileImage
+        WHERE m.id = :id
+    """)
+    void updateProfile(@Param("profileImage") String profileImage, @Param("nickname") String nickname, @Param("id") Long id);
+
 }

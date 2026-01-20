@@ -1,15 +1,14 @@
 package com.example.todayserver.domain.member.service.util;
 
-import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.CannedAccessControlList;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.example.todayserver.domain.member.excpetion.MemberException;
 import com.example.todayserver.domain.member.excpetion.code.MemberErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -17,7 +16,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class AwsFileService {
-    private final AmazonS3Client amazonS3Client;
+    private final S3Client s3Client;
 
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
@@ -36,14 +35,21 @@ public class AwsFileService {
         String ext = originalName.substring(originalName.lastIndexOf("."));
         String fileName = "profile/" + memberId + "/" + UUID.randomUUID() + ext;
 
-        ObjectMetadata metadata = new ObjectMetadata();
-        metadata.setContentLength(file.getSize());
-        metadata.setContentType(file.getContentType());
+        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                .bucket(bucket)
+                .key(fileName)
+                .contentType(file.getContentType())
+                .build();
 
-        amazonS3Client.putObject(
-                new PutObjectRequest(bucket, fileName, file.getInputStream(), metadata)
-                        .withCannedAcl(CannedAccessControlList.PublicRead)
+        s3Client.putObject(
+                putObjectRequest,
+                RequestBody.fromInputStream(file.getInputStream(), file.getSize())
         );
-        return amazonS3Client.getUrl(bucket, fileName).toString();
+
+        return getPublicUrl(fileName);
+    }
+
+    private String getPublicUrl(String key) {
+        return "https://" + bucket + ".s3.amazonaws.com/" + key;
     }
 }

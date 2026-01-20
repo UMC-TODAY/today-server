@@ -2,6 +2,7 @@ package com.example.todayserver.domain.member.dto;
 
 import jakarta.validation.constraints.*;
 import lombok.Data;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 
@@ -40,5 +41,14 @@ public class MemberReqDto {
         @Size(min = 8, max = 32)
         @NotBlank
         private String password;
+    }
+
+    @Data
+    public static class ProfileInfo{
+        @NotNull
+        MultipartFile profileImage;
+
+        @NotBlank
+        String nickName;
     }
 }
