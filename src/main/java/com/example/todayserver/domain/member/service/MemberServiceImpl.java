@@ -1,9 +1,11 @@
 package com.example.todayserver.domain.member.service;
 
 import com.example.todayserver.domain.member.converter.MemberConverter;
+import com.example.todayserver.domain.member.converter.PreferenceConverter;
 import com.example.todayserver.domain.member.dto.MemberReqDto;
 import com.example.todayserver.domain.member.dto.MemberResDto;
 import com.example.todayserver.domain.member.entity.Member;
+import com.example.todayserver.domain.member.entity.Preference;
 import com.example.todayserver.domain.member.enums.SocialType;
 import com.example.todayserver.domain.member.excpetion.AuthException;
 import com.example.todayserver.domain.member.excpetion.MemberException;
@@ -11,6 +13,7 @@ import com.example.todayserver.domain.member.excpetion.code.AuthErrorCode;
 import com.example.todayserver.domain.member.excpetion.code.MemberErrorCode;
 import com.example.todayserver.domain.member.repository.EmailCodeRepository;
 import com.example.todayserver.domain.member.repository.MemberRepository;
+import com.example.todayserver.domain.member.repository.PreferenceRepository;
 import com.example.todayserver.domain.member.service.util.MemberWithdrawService;
 import com.example.todayserver.domain.member.service.util.RandomNicknameGenerator;
 import com.example.todayserver.global.common.jwt.JwtUtil;
@@ -30,6 +33,7 @@ public class MemberServiceImpl implements MemberService {
     private final PasswordEncoder passwordEncoder;
     private final MemberWithdrawService memberWithdrawService;
     private final JwtUtil jwtUtil;
+    private final PreferenceRepository preferenceRepository;
 
     @Override
     public void checkEmailDuplicate(String email) {
@@ -54,6 +58,8 @@ public class MemberServiceImpl implements MemberService {
             try {
                 Member member = MemberConverter.toMember(dto, salt, nickname);
                 memberRepository.save(member);
+                Preference preference = PreferenceConverter.newPreference(member);
+                preferenceRepository.save(preference);
                 return;
             } catch (DataIntegrityViolationException e) {
                 //재시도

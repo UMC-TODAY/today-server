@@ -35,7 +35,7 @@ public class Preference {
     @Column(name = "data_use")
     private boolean dataUse = true;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false, unique = true)
     private Member member;
 }

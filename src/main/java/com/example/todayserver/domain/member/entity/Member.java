@@ -58,6 +58,4 @@ public class Member extends BaseEntity {
         this.profileImage = userInfo.getProfileImage();
     }
 
-    @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Preference preference;
 }

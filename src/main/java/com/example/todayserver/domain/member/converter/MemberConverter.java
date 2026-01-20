@@ -23,7 +23,6 @@ public class MemberConverter {
                 .nickname(nickname)
                 .socialType(SocialType.EMAIL)
                 .status(Status.ACTIVATE)
-                .preference(Preference.builder().member(null).build())
                 .build();
     }
 
