@@ -1,6 +1,7 @@
 package com.example.todayserver.domain.schedule.connect.controller;
 
 import com.example.todayserver.domain.schedule.connect.dto.GoogleAuthorizeUrlRes;
+import com.example.todayserver.domain.schedule.connect.dto.IntegrationStatusUpdateReq;
 import com.example.todayserver.domain.schedule.connect.dto.IntergrationStatueRes;
 import com.example.todayserver.domain.schedule.connect.dto.NotionAuthorizeUrlRes;
 import com.example.todayserver.domain.schedule.connect.service.ExternalIntergrationService;
@@ -35,6 +36,20 @@ public class ExternalIntegrationController {
     ) {
         IntergrationStatueRes res = externalIntergrationService.getIntegrationStatus(memberId);
         return ApiResponse.success(res);
+    }
+
+    @Operation(
+            summary = "외부 연동 해제",
+            description = "사용자가 연동 해제를 요청하면 DISCONNECTED로 변경하고 토큰 정보를 제거합니다."
+    )
+    @PatchMapping("/status")
+    public ApiResponse<Void> updateIntegrationStatus(
+            @Parameter(hidden = true)
+            @AuthenticationPrincipal(expression = "id") Long memberId,
+            @RequestBody IntegrationStatusUpdateReq req
+    ) {
+        externalIntergrationService.disconnect(memberId, req);
+        return ApiResponse.success(null);
     }
 
     @Operation(

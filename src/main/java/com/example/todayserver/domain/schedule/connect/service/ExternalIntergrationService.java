@@ -1,11 +1,14 @@
 package com.example.todayserver.domain.schedule.connect.service;
 
 import com.example.todayserver.domain.schedule.connect.converter.ExternalIntegrationConverter;
+import com.example.todayserver.domain.schedule.connect.dto.IntegrationStatusUpdateReq;
 import com.example.todayserver.domain.schedule.connect.dto.IntergrationStatueRes;
 import com.example.todayserver.domain.schedule.connect.entity.ExternalAccount;
 import com.example.todayserver.domain.schedule.connect.enums.ExternalAccountStatus;
 import com.example.todayserver.domain.schedule.connect.enums.ExternalProvider;
 import com.example.todayserver.domain.schedule.connect.repository.ExternalAccountRepository;
+import com.example.todayserver.global.common.exception.CustomException;
+import com.example.todayserver.global.common.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,5 +31,18 @@ public class ExternalIntergrationService {
                 .collect(Collectors.toSet());
 
         return externalIntegrationConverter.toStatusRes(connectedProviders);
+    }
+
+    @Transactional
+    public void disconnect(Long memberId, IntegrationStatusUpdateReq req) {
+        if (req.connected()) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
+
+        ExternalAccount account = externalAccountRepository
+                .findByMemberIdAndProvider(memberId, req.provider())
+                .orElseThrow(() -> new CustomException(ErrorCode.EXTERNAL_ACCOUNT_NOT_FOUND));
+
+        account.disconnect();
     }
 }

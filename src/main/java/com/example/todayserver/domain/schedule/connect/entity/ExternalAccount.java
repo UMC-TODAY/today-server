@@ -109,4 +109,9 @@ public class ExternalAccount extends BaseEntity {
         clearOAuthState();
     }
 
+    public void disconnect() {
+        this.status = ExternalAccountStatus.DISCONNECTED;
+        this.accessToken = null;
+        this.refreshToken = null;
+    }
 }
