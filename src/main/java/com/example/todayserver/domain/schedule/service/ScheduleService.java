@@ -3,6 +3,9 @@ package com.example.todayserver.domain.schedule.service;
 import com.example.todayserver.domain.member.entity.Member;
 import com.example.todayserver.domain.member.excpetion.code.MemberErrorCode;
 import com.example.todayserver.domain.member.repository.MemberRepository;
+import com.example.todayserver.domain.schedule.connect.entity.ExternalAccount;
+import com.example.todayserver.domain.schedule.connect.enums.ExternalAccountStatus;
+import com.example.todayserver.domain.schedule.connect.repository.ExternalAccountRepository;
 import com.example.todayserver.domain.schedule.converter.EventMonthlyConverter;
 import com.example.todayserver.domain.schedule.converter.ScheduleCreateConverter;
 import com.example.todayserver.domain.schedule.dto.EventMonthlyCompletionRes;
@@ -23,15 +26,15 @@ import com.example.todayserver.domain.schedule.dto.ScheduleSearchItemResponse;
 import com.example.todayserver.domain.schedule.dto.ScheduleBulkDeleteRequest;
 import com.example.todayserver.domain.schedule.dto.ScheduleBulkDeleteResponse;
 
-
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -39,6 +42,7 @@ public class ScheduleService {
     private final ScheduleRepository scheduleRepository;
     private final MemberRepository memberRepository;
     private final SubScheduleRepository subScheduleRepository;
+    private final ExternalAccountRepository externalAccountRepository;
     private final ScheduleCreateConverter scheduleCreateConverter;
     private final EventMonthlyConverter eventMonthlyConverter;
     private final ScheduleCreateValidator scheduleCreateValidator;
@@ -82,19 +86,25 @@ public class ScheduleService {
         // 지난 일정 숨기기 여부 (null 이면 false)
         boolean hidePast = Boolean.TRUE.equals(req.hidePast());
 
+        List<ScheduleSource> allowedSources = getAllowedSources(memberId);
+
         List<Schedule> schedules;
 
         if ("ALL".equals(filterLabel)) {
-            // 한 달 일정 전체 조회
-            schedules = scheduleRepository.findByMemberIdAndScheduleTypeAndStartedAtBetween(
+            schedules = scheduleRepository.findByMemberIdAndScheduleTypeAndStartedAtBetweenAndSourceIn(
                     memberId,
                     ScheduleType.EVENT,
                     startedAtFrom,
-                    startedAtTo
+                    startedAtTo,
+                    allowedSources
             );
         } else {
-            // 특정 출처만 조회 (GOOGLE, NOTION, ICLOUD, CSV, LOCAL)
             ScheduleSource sourceFilter = ScheduleSource.valueOf(filterLabel);
+
+            // 연동 해제된 source를 요청하면 빈 결과 반환
+            if (!allowedSources.contains(sourceFilter)) {
+                return eventMonthlyConverter.toEventMonthlyListRes(filterLabel, List.of());
+            }
 
             schedules = scheduleRepository.findByMemberIdAndScheduleTypeAndStartedAtBetweenAndSource(
                     memberId,
@@ -108,27 +118,21 @@ public class ScheduleService {
         // 지난 일정 숨기기 적용 (현재 월일 때만)
         if (hidePast) {
             LocalDate today = LocalDate.now();
-
-            boolean isCurrentMonth =
-                    year.equals(today.getYear()) &&
-                            month.equals(today.getMonthValue());
+            boolean isCurrentMonth = year.equals(today.getYear()) && month.equals(today.getMonthValue());
 
             if (isCurrentMonth) {
                 schedules = schedules.stream()
                         .filter(schedule -> {
-                            if (schedule.getStartedAt() == null) {
-                                return true;
-                            }
+                            if (schedule.getStartedAt() == null) return true;
                             LocalDate date = schedule.getStartedAt().toLocalDate();
-                            // 오늘 이전 날짜면 숨김
                             return !date.isBefore(today);
                         })
                         .toList();
             }
         }
+
         return eventMonthlyConverter.toEventMonthlyListRes(filterLabel, schedules);
     }
-
 
     // 월별 일정 완료 현황 조회
     @Transactional(readOnly = true)
@@ -140,17 +144,21 @@ public class ScheduleService {
         LocalDateTime startedAtFrom = startDate.atStartOfDay();
         LocalDateTime startedAtTo = endDate.atTime(23, 59, 59);
 
-        long total = scheduleRepository.countByMemberIdAndScheduleTypeAndStartedAtBetween(
+        List<ScheduleSource> allowedSources = getAllowedSources(memberId);
+
+        long total = scheduleRepository.countByMemberIdAndScheduleTypeAndStartedAtBetweenAndSourceIn(
                 memberId,
                 ScheduleType.EVENT,
                 startedAtFrom,
-                startedAtTo
+                startedAtTo,
+                allowedSources
         );
-        long completed = scheduleRepository.countByMemberIdAndScheduleTypeAndStartedAtBetweenAndIsDoneTrue(
+        long completed = scheduleRepository.countByMemberIdAndScheduleTypeAndStartedAtBetweenAndIsDoneTrueAndSourceIn(
                 memberId,
                 ScheduleType.EVENT,
                 startedAtFrom,
-                startedAtTo
+                startedAtTo,
+                allowedSources
         );
 
         return EventMonthlyCompletionRes.of(year, month, total, completed);
@@ -230,6 +238,17 @@ public class ScheduleService {
         return new ScheduleBulkDeleteResponse(deleted);
     }
 
+    // 허용 가능 소스 조회
+    private List<ScheduleSource> getAllowedSources(Long memberId) {
+        Set<ScheduleSource> allowedSources = EnumSet.of(ScheduleSource.LOCAL, ScheduleSource.CSV);
 
+        List<ExternalAccount> connectedAccounts =
+                externalAccountRepository.findAllByMemberIdAndStatus(memberId, ExternalAccountStatus.CONNECTED);
 
+        for (ExternalAccount account : connectedAccounts) {
+            allowedSources.add(ScheduleSource.valueOf(account.getProvider().name()));
+        }
+
+        return List.copyOf(allowedSources);
+    }
 }

@@ -22,4 +22,6 @@ public interface ExternalAccountRepository extends JpaRepository<ExternalAccount
     Optional<ExternalAccount> findByProviderAndOauthState(ExternalProvider provider, String oauthState);
 
     List<ExternalAccount> findAllByMemberId(Long memberId);
+
+    List<ExternalAccount> findAllByMemberIdAndStatus(Long memberId, ExternalAccountStatus status);
 }
