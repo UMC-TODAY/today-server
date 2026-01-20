@@ -28,7 +28,10 @@ public enum MemberErrorCode implements BaseErrorCode {
             "탈퇴한지 7일 이내인 계정으로 가입하실 수 없습니다."),
     NO_PASSWORD(HttpStatus.BAD_REQUEST,
             "PASSWORD_400",
-            "소셜 가입자는 비밀번호를 재설정 하실 수 없습니다.");
+            "소셜 가입자는 비밀번호를 재설정 하실 수 없습니다."),
+    FILE_TYPE_ERROR(HttpStatus.BAD_REQUEST,
+            "FILE400",
+            "이미지 파일만 업로드 가능합니다.");
 
     private final HttpStatus status;
     private final String code;
