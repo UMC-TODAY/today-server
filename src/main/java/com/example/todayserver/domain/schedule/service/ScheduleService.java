@@ -9,6 +9,7 @@ import com.example.todayserver.domain.schedule.connect.repository.ExternalAccoun
 import com.example.todayserver.domain.schedule.converter.EventMonthlyConverter;
 import com.example.todayserver.domain.schedule.converter.ScheduleCreateConverter;
 import com.example.todayserver.domain.schedule.converter.ScheduleDetailConverter;
+import com.example.todayserver.domain.schedule.converter.ScheduleUpdateConverter;
 import com.example.todayserver.domain.schedule.dto.*;
 import com.example.todayserver.domain.schedule.entity.Schedule;
 import com.example.todayserver.domain.schedule.entity.SubSchedule;
@@ -19,6 +20,7 @@ import com.example.todayserver.domain.schedule.repository.SubScheduleRepository;
 import com.example.todayserver.domain.schedule.validator.ScheduleCreateValidator;
 import com.example.todayserver.global.common.exception.CustomException;
 
+import com.example.todayserver.global.common.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,6 +42,7 @@ public class ScheduleService {
     private final EventMonthlyConverter eventMonthlyConverter;
     private final ScheduleCreateValidator scheduleCreateValidator;
     private final ScheduleDetailConverter scheduleDetailConverter;
+    private final ScheduleUpdateConverter scheduleUpdateConverter;
 
 
     @Transactional
@@ -170,6 +173,64 @@ public class ScheduleService {
         return scheduleDetailConverter.toDetailRes(schedule, subSchedules);
     }
 
+    // 일정/할일 수정
+    @Transactional
+    public ScheduleDetailRes updateSchedule(Long memberId, Long scheduleId, ScheduleUpdateReq req) {
+        Schedule schedule = scheduleRepository.findByIdAndMember_Id(scheduleId, memberId)
+                .orElseThrow(() -> new CustomException(MemberErrorCode.NOT_FOUND));
+
+        LocalDateTime newStartedAt = scheduleUpdateConverter.resolveStartedAt(schedule, req);
+        LocalDateTime newEndedAt = scheduleUpdateConverter.resolveEndedAt(schedule, req);
+
+        // Schedule 부분 업데이트 (요청 필드만 반영)
+        schedule.updatePatch(
+                req.scheduleType(),
+                req.mode(),
+                req.title(),
+                req.memo(),
+                req.bgColor(),
+                req.emoji(),
+                req.repeatType(),
+                req.duration(),
+                req.isAllDay(),
+                newStartedAt,
+                newEndedAt
+        );
+
+        // SubSchedule 부분 수정/추가
+        if (req.subSchedules() != null && !req.subSchedules().isEmpty()) {
+            for (SubScheduleUpdateReq s : req.subSchedules()) {
+
+                // 수정 : subScheduleId가 있으면 해당 row 부분 수정
+                if (s.subScheduleId() != null) {
+                    SubSchedule target = subScheduleRepository
+                            .findByIdAndSchedule_Id(s.subScheduleId(), schedule.getId())
+                            .orElseThrow(() -> new CustomException(ErrorCode.SCHEDULE_NOT_FOUND));
+
+                    target.updatePatch(s.subTitle(), s.subColor(), s.subEmoji());
+                    continue;
+                }
+
+                //  추가 : subScheduleId 없으면 신규 추가
+                if (s.subTitle() == null || s.subTitle().isBlank()
+                        || s.subColor() == null || s.subColor().isBlank()) {
+                    throw new CustomException(MemberErrorCode.NOT_FOUND);
+                }
+
+                SubSchedule created = SubSchedule.builder()
+                        .schedule(schedule)
+                        .title(s.subTitle())
+                        .color(s.subColor())
+                        .emoji(s.subEmoji())
+                        .build();
+
+                subScheduleRepository.save(created);
+            }
+        }
+
+        List<SubSchedule> latestSubs = subScheduleRepository.findAllBySchedule_Id(schedule.getId());
+        return scheduleDetailConverter.toDetailRes(schedule, latestSubs);
+    }
     // 로그인한 사용자(memberId)의 일정(scheduleId)을 찾아 요청값(is_done)으로 완료 상태를 변경
     // 일정이 없거나 본인 소유가 아니면 예외를 발생시키고, 변경된 id/is_done 값을 응답 DTO로 반환
     @Transactional

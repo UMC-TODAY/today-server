@@ -31,4 +31,10 @@ public class SubSchedule extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "schedule_id", nullable = false)
     private Schedule schedule;
+
+    public void updatePatch(String title, String color, String emoji) {
+        if (title != null) this.title = title;
+        if (color != null) this.color = color;
+        if (emoji != null) this.emoji = emoji;
+    }
 }
