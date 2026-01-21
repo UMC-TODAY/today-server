@@ -1,12 +1,10 @@
 package com.example.todayserver.domain.schedule.controller;
 
-import com.example.todayserver.domain.schedule.dto.EventMonthlyCompletionRes;
-import com.example.todayserver.domain.schedule.dto.EventMonthlyListRes;
-import com.example.todayserver.domain.schedule.dto.EventMonthlySearchReq;
-import com.example.todayserver.domain.schedule.dto.ScheduleCreateReq;
+import com.example.todayserver.domain.schedule.dto.*;
 import com.example.todayserver.domain.schedule.service.ScheduleService;
 import com.example.todayserver.global.common.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -15,12 +13,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import com.example.todayserver.domain.schedule.dto.ScheduleStatusUpdateRequest;
-import com.example.todayserver.domain.schedule.dto.ScheduleStatusUpdateResponse;
-import com.example.todayserver.domain.schedule.dto.ScheduleSearchItemResponse;
 import org.springframework.format.annotation.DateTimeFormat;
-import com.example.todayserver.domain.schedule.dto.ScheduleBulkDeleteRequest;
-import com.example.todayserver.domain.schedule.dto.ScheduleBulkDeleteResponse;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -59,6 +52,16 @@ public class ScheduleController {
         return ApiResponse.success(res);
     }
 
+    @Operation(summary = "일정 단건 상세 조회", description = "로그인한 사용자의 일정/할일을 상세 조회합니다.")
+    @GetMapping("/{scheduleId}")
+    public ApiResponse<ScheduleDetailRes> getScheduleDetail(
+            @Parameter(hidden = true)
+            @AuthenticationPrincipal(expression = "id") Long memberId,
+            @PathVariable Long scheduleId
+    ) {
+         return ApiResponse.success(scheduleService.getScheduleDetail(memberId, scheduleId));
+    }
+
     @Operation(summary = "월별 일정 완료 현황 조회", description = "월별 일정 완료 현황을 조회합니다.")
     @GetMapping("/events/completion")
     public ApiResponse<EventMonthlyCompletionRes> getMonthlyEventCompletion(
@@ -71,6 +74,18 @@ public class ScheduleController {
                 scheduleService.getMonthlyEventCompletion(memberId, year, month);
 
         return ApiResponse.success(res);
+    }
+
+    @Operation(summary = "일정/할일 수정", description = "일정/할일을 수정합니다.")
+    @PatchMapping("/{scheduleId}")
+    public ApiResponse<ScheduleDetailRes> updateSchedule(
+            @Parameter(hidden = true)
+            @AuthenticationPrincipal(expression = "id") Long memberId,
+            @PathVariable Long scheduleId,
+            @Valid @RequestBody ScheduleUpdateReq req
+    ) {
+        ScheduleDetailRes res = scheduleService.updateSchedule(memberId, scheduleId, req);
+        return ApiResponse.success("요청이 성공적으로 처리되었습니다.", res);
     }
 
     // 일정/할 일의 완료 상태(is_done)를 요청값으로 변경, 변경된 결과(id, is_done)를 반환

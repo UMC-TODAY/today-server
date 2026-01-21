@@ -78,4 +78,30 @@ public class Schedule extends BaseEntity {
         this.isDone = isDone;
     }
 
+    public void updatePatch(
+            ScheduleType scheduleType,
+            Mode mode,
+            String title,
+            String memo,
+            String color,
+            String emoji,
+            RepeatType repeatType,
+            Integer durationMinutes,
+            Boolean isAllDay,
+            LocalDateTime startedAt,
+            LocalDateTime endedAt
+    ) {
+        if (scheduleType != null) this.scheduleType = scheduleType;
+        if (mode != null) this.mode = mode;
+        if (title != null) this.title = title;
+        if (memo != null) this.memo = memo;
+        if (color != null) this.color = color;
+        if (emoji != null) this.emoji = emoji;
+        if (repeatType != null) this.repeatType = repeatType;
+        if (durationMinutes != null) this.durationMinutes = durationMinutes;
+        if (isAllDay != null) this.isAllDay = isAllDay;
+
+        if (startedAt != null) this.startedAt = startedAt;
+        if (endedAt != null) this.endedAt = endedAt;
+    }
 }
