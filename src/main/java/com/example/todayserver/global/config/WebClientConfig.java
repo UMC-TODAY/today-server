@@ -30,6 +30,7 @@ public class WebClientConfig {
                 .build();
     }
 
+    // Google API 전용 WebClient
     @Bean
     public WebClient googleCalendarWebClient() {
         return WebClient.builder()
@@ -48,6 +49,12 @@ public class WebClientConfig {
                 .baseUrl(notionProperties.getApiBase())
                 .defaultHeader("Notion-Version", notionProperties.getVersion())
                 .build();
+    }
+
+    // iCloud 전용 WebClient
+    @Bean
+    public WebClient icloudWebClient(WebClient.Builder builder) {
+        return builder.build();
     }
 
     private HttpClient httpClient() {

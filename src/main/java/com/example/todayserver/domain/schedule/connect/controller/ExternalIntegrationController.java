@@ -1,11 +1,9 @@
 package com.example.todayserver.domain.schedule.connect.controller;
 
-import com.example.todayserver.domain.schedule.connect.dto.GoogleAuthorizeUrlRes;
-import com.example.todayserver.domain.schedule.connect.dto.IntegrationStatusUpdateReq;
-import com.example.todayserver.domain.schedule.connect.dto.IntergrationStatueRes;
-import com.example.todayserver.domain.schedule.connect.dto.NotionAuthorizeUrlRes;
+import com.example.todayserver.domain.schedule.connect.dto.*;
 import com.example.todayserver.domain.schedule.connect.service.ExternalIntergrationService;
 import com.example.todayserver.domain.schedule.connect.service.google.GoogleConnectService;
+import com.example.todayserver.domain.schedule.connect.service.icloud.IcloudConnectService;
 import com.example.todayserver.domain.schedule.connect.service.notion.NotionConnectService;
 import com.example.todayserver.global.common.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -24,6 +22,7 @@ public class ExternalIntegrationController {
     private final GoogleConnectService googleConnectService;
     private final NotionConnectService notionConnectService;
     private final ExternalIntergrationService externalIntergrationService;
+    private final IcloudConnectService icloudConnectService;
 
     @Operation(
             summary = "외부 연동 상태 조회",
@@ -110,6 +109,19 @@ public class ExternalIntegrationController {
             String state
     ) {
         notionConnectService.handleCallback(code, state);
+        return ApiResponse.success(null);
+    }
+
+    @Operation(
+            summary = "iCloud 캘린더 연동 API",
+            description = "ics 링크를 기반으로 사용자의 iCloud 일정을 연동합니다."
+    )
+    @PostMapping("/icloud/connections")
+    public ApiResponse<Void> connectIcloud(
+            @AuthenticationPrincipal(expression = "id") Long memberId,
+            @RequestBody IcloudIntergrationsReq req
+    ) {
+        icloudConnectService.connectAndSync(memberId, req);
         return ApiResponse.success(null);
     }
 }
