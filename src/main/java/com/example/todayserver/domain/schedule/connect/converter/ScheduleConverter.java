@@ -48,6 +48,7 @@ public class ScheduleConverter {
                 .repeatType(null)
                 .durationMinutes(null)
                 .isDone(false)
+                .isAllDay(event.allDay())
                 .build();
     }
 }

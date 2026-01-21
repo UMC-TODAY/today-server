@@ -66,6 +66,9 @@ public class Schedule extends BaseEntity {
     @Column(name = "is_done", nullable = false)
     private boolean isDone;
 
+    @Column(name = "is_all_day", nullable = false)
+    private boolean isAllDay;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
