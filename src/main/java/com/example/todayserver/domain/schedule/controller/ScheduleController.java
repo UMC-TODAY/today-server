@@ -1,12 +1,10 @@
 package com.example.todayserver.domain.schedule.controller;
 
-import com.example.todayserver.domain.schedule.dto.EventMonthlyCompletionRes;
-import com.example.todayserver.domain.schedule.dto.EventMonthlyListRes;
-import com.example.todayserver.domain.schedule.dto.EventMonthlySearchReq;
-import com.example.todayserver.domain.schedule.dto.ScheduleCreateReq;
+import com.example.todayserver.domain.schedule.dto.*;
 import com.example.todayserver.domain.schedule.service.ScheduleService;
 import com.example.todayserver.global.common.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -15,12 +13,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import com.example.todayserver.domain.schedule.dto.ScheduleStatusUpdateRequest;
-import com.example.todayserver.domain.schedule.dto.ScheduleStatusUpdateResponse;
-import com.example.todayserver.domain.schedule.dto.ScheduleSearchItemResponse;
 import org.springframework.format.annotation.DateTimeFormat;
-import com.example.todayserver.domain.schedule.dto.ScheduleBulkDeleteRequest;
-import com.example.todayserver.domain.schedule.dto.ScheduleBulkDeleteResponse;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -57,6 +50,16 @@ public class ScheduleController {
         EventMonthlyListRes res = scheduleService.getMonthlyEvents(memberId, req);
 
         return ApiResponse.success(res);
+    }
+
+    @Operation(summary = "일정 단건 상세 조회", description = "로그인한 사용자의 일정/할일을 상세 조회합니다.")
+    @GetMapping("/{scheduleId}")
+    public ScheduleDetailRes getScheduleDetail(
+            @Parameter(hidden = true)
+            @AuthenticationPrincipal(expression = "id") Long memberId,
+            @PathVariable Long scheduleId
+    ) {
+        return scheduleService.getScheduleDetail(memberId, scheduleId);
     }
 
     @Operation(summary = "월별 일정 완료 현황 조회", description = "월별 일정 완료 현황을 조회합니다.")

@@ -8,10 +8,8 @@ import com.example.todayserver.domain.schedule.connect.enums.ExternalAccountStat
 import com.example.todayserver.domain.schedule.connect.repository.ExternalAccountRepository;
 import com.example.todayserver.domain.schedule.converter.EventMonthlyConverter;
 import com.example.todayserver.domain.schedule.converter.ScheduleCreateConverter;
-import com.example.todayserver.domain.schedule.dto.EventMonthlyCompletionRes;
-import com.example.todayserver.domain.schedule.dto.EventMonthlyListRes;
-import com.example.todayserver.domain.schedule.dto.EventMonthlySearchReq;
-import com.example.todayserver.domain.schedule.dto.ScheduleCreateReq;
+import com.example.todayserver.domain.schedule.converter.ScheduleDetailConverter;
+import com.example.todayserver.domain.schedule.dto.*;
 import com.example.todayserver.domain.schedule.entity.Schedule;
 import com.example.todayserver.domain.schedule.entity.SubSchedule;
 import com.example.todayserver.domain.schedule.enums.ScheduleSource;
@@ -20,11 +18,6 @@ import com.example.todayserver.domain.schedule.repository.ScheduleRepository;
 import com.example.todayserver.domain.schedule.repository.SubScheduleRepository;
 import com.example.todayserver.domain.schedule.validator.ScheduleCreateValidator;
 import com.example.todayserver.global.common.exception.CustomException;
-import com.example.todayserver.domain.schedule.dto.ScheduleStatusUpdateRequest;
-import com.example.todayserver.domain.schedule.dto.ScheduleStatusUpdateResponse;
-import com.example.todayserver.domain.schedule.dto.ScheduleSearchItemResponse;
-import com.example.todayserver.domain.schedule.dto.ScheduleBulkDeleteRequest;
-import com.example.todayserver.domain.schedule.dto.ScheduleBulkDeleteResponse;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -46,6 +39,8 @@ public class ScheduleService {
     private final ScheduleCreateConverter scheduleCreateConverter;
     private final EventMonthlyConverter eventMonthlyConverter;
     private final ScheduleCreateValidator scheduleCreateValidator;
+    private final ScheduleDetailConverter scheduleDetailConverter;
+
 
     @Transactional
     public Long createSchedule(Long memberId, ScheduleCreateReq req) {
@@ -162,6 +157,17 @@ public class ScheduleService {
         );
 
         return EventMonthlyCompletionRes.of(year, month, total, completed);
+    }
+
+    // 일정 상세 조회
+    @Transactional(readOnly = true)
+    public ScheduleDetailRes getScheduleDetail(Long memberId, Long scheduleId) {
+        Schedule schedule = scheduleRepository.findByIdAndMember_Id(scheduleId, memberId)
+                .orElseThrow(() -> new CustomException(MemberErrorCode.NOT_FOUND));
+
+        List<SubSchedule> subSchedules = subScheduleRepository.findAllBySchedule_Id(schedule.getId());
+
+        return scheduleDetailConverter.toDetailRes(schedule, subSchedules);
     }
 
     // 로그인한 사용자(memberId)의 일정(scheduleId)을 찾아 요청값(is_done)으로 완료 상태를 변경
