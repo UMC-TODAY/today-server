@@ -5,6 +5,8 @@ import com.example.todayserver.domain.schedule.connect.enums.ExternalAccountStat
 import com.example.todayserver.domain.schedule.connect.enums.ExternalAuthType;
 import com.example.todayserver.domain.schedule.connect.enums.ExternalProvider;
 import com.example.todayserver.global.common.entity.BaseEntity;
+import com.example.todayserver.global.common.exception.CustomException;
+import com.example.todayserver.global.common.exception.ErrorCode;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -39,6 +41,10 @@ public class ExternalAccount extends BaseEntity {
     @Lob
     @Column(name = "refresh_token",  nullable = true)
     private String refreshToken;
+
+    @Lob
+    @Column(name = "ics_url", nullable = true)
+    private String icsUrl;
 
     @Column(name = "expired_at",  nullable = true)
     private LocalDateTime expiredAt;
@@ -113,5 +119,14 @@ public class ExternalAccount extends BaseEntity {
         this.status = ExternalAccountStatus.DISCONNECTED;
         this.accessToken = null;
         this.refreshToken = null;
+        this.icsUrl = null;
     }
+
+    public void updateIcsUrl(String icsUrl) {
+        if (icsUrl == null || icsUrl.isBlank()) {
+            throw new CustomException(ErrorCode.EXTERNAL_CALENDAR_INVALID_URL);
+        }
+        this.icsUrl = icsUrl;
+    }
+
 }
