@@ -20,13 +20,17 @@ public class ScheduleExternalConverter {
             Schedule schedule,
             ScheduleExternalVersionType versionType
     ) {
+        var originUpdatedAt = event.originUpdatedAt() != null
+                ? event.originUpdatedAt()
+                : (event.startedAt() != null ? event.startedAt() : java.time.LocalDateTime.now());
+
         return ScheduleExternal.builder()
                 .externalSource(source)
                 .schedule(schedule)
                 .externalEventId(event.externalEventId())
                 .versionType(versionType)
                 .versionKey(buildVersionKey(event, versionType))
-                .originUpdatedAt(event.originUpdatedAt())
+                .originUpdatedAt(originUpdatedAt)
                 .build();
     }
 
