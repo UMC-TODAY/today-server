@@ -66,6 +66,8 @@ dependencies {
 	// ical
 	implementation("org.mnode.ical4j:ical4j:3.2.9")
 
+	// csv
+	implementation 'org.apache.commons:commons-csv:1.10.0'
 }
 
 tasks.named('test') {
