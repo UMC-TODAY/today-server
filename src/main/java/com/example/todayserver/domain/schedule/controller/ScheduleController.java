@@ -1,5 +1,7 @@
 package com.example.todayserver.domain.schedule.controller;
 
+import com.example.todayserver.domain.schedule.connect.dto.CsvScheduleImportDto;
+import com.example.todayserver.domain.schedule.connect.service.csv.CsvScheduleImportService;
 import com.example.todayserver.domain.schedule.dto.*;
 import com.example.todayserver.domain.schedule.service.ScheduleService;
 import com.example.todayserver.global.common.response.ApiResponse;
@@ -11,9 +13,11 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -27,6 +31,7 @@ import java.util.List;
 public class ScheduleController {
 
     private final ScheduleService scheduleService;
+    private final CsvScheduleImportService csvScheduleImportService;
 
     @Operation(summary = "일정/할 일 등록", description = "인증된 사용자의 일정 또는 할 일을 등록합니다. <br> 작업 유형에 따른 요청 값을 입력해주세요.<br> 관련 내용은 노션 API 명세서에서 확인 가능합니다.")
     @PostMapping
@@ -38,6 +43,16 @@ public class ScheduleController {
         Long scheduleId = scheduleService.createSchedule(memberId, req);
 
         return ApiResponse.success("요청이 성공적으로 처리되었습니다.", scheduleId);
+    }
+
+    @Operation(summary = "일정 csv 업로드", description = "csv 파일로 일정을 업로드합니다. ")
+    @PostMapping(value = "/csv", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponse<CsvScheduleImportDto.Result> importCsv(
+            @AuthenticationPrincipal(expression = "id") Long memberId,
+            @RequestPart("file") MultipartFile file
+    ) {
+        CsvScheduleImportDto.Result result = csvScheduleImportService.importCsv(memberId, file);
+        return ApiResponse.success(result);
     }
 
     @Operation(summary = "월별 일정 조회", description = "연도/월/출처 필터 기준으로 일정 목록을 조회합니다.")

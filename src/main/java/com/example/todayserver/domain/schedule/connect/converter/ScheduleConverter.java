@@ -1,6 +1,7 @@
 package com.example.todayserver.domain.schedule.connect.converter;
 
 import com.example.todayserver.domain.member.entity.Member;
+import com.example.todayserver.domain.schedule.connect.dto.CsvScheduleImportDto;
 import com.example.todayserver.domain.schedule.connect.dto.ExternalEventDto;
 import com.example.todayserver.domain.schedule.entity.Schedule;
 import com.example.todayserver.domain.schedule.enums.ScheduleSource;
@@ -49,6 +50,28 @@ public class ScheduleConverter {
                 .durationMinutes(null)
                 .isDone(false)
                 .isAllDay(event.allDay())
+                .build();
+    }
+
+    public static Schedule fromCsv(
+            CsvScheduleImportDto.Normalized dto,
+            Member member
+    ) {
+        return Schedule.builder()
+                .member(member)
+                .scheduleType(ScheduleType.EVENT)
+                .mode(null)
+                .source(ScheduleSource.CSV)
+                .title(dto.title())
+                .memo(dto.memo())
+                .color(randomEventColor())
+                .emoji(null)
+                .startedAt(dto.startedAt())
+                .endedAt(dto.endedAt())
+                .repeatType(null)
+                .durationMinutes(null)
+                .isDone(false)
+                .isAllDay(dto.isAllDay())
                 .build();
     }
 }
