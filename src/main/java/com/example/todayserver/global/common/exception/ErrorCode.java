@@ -39,6 +39,15 @@ public enum ErrorCode implements BaseErrorCode {
     EXTERNAL_CALENDAR_FETCH_FAILED(HttpStatus.BAD_GATEWAY, "EXTERNAL502_1", "외부 캘린더(ICS) 조회에 실패했습니다."),
     EXTERNAL_CALENDAR_PARSE_FAILED(HttpStatus.BAD_GATEWAY, "EXTERNAL502_2", "외부 캘린더(ICS) 파싱에 실패했습니다."),
 
+    //csv
+    // External - CSV Import
+    CSV_FILE_REQUIRED(HttpStatus.BAD_REQUEST, "EXTERNAL400_6", "CSV 파일이 필요합니다."),
+    CSV_FILE_EXTENSION_INVALID(HttpStatus.BAD_REQUEST, "EXTERNAL400_7", "CSV 파일 형식이 올바르지 않습니다."),
+    CSV_HEADER_INVALID(HttpStatus.BAD_REQUEST, "EXTERNAL400_8", "CSV 헤더 형식이 올바르지 않습니다."),
+    CSV_ROW_VALIDATION_FAILED(HttpStatus.BAD_REQUEST, "EXTERNAL400_9", "CSV 파일 내 일부 데이터가 올바르지 않습니다."),
+    CSV_FILE_READ_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "EXTERNAL500_5", "CSV 파일을 읽는 중 오류가 발생했습니다."),
+    CSV_ENCODING_INVALID(HttpStatus.BAD_REQUEST, "EXTERNAL400_10", "CSV 인코딩이 올바르지 않습니다. 'CSV UTF-8(쉼표로 분리)'로 저장 후 다시 업로드해 주세요."
+    ),
     ;
 
     private final HttpStatus status;
