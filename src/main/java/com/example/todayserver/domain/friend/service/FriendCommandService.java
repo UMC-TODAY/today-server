@@ -1,10 +1,13 @@
 package com.example.todayserver.domain.friend.service;
 
+import com.example.todayserver.domain.notification.entity.Notification;
+import com.example.todayserver.domain.notification.entity.NotificationType;
 import com.example.todayserver.domain.friend.entity.Friend;
 import com.example.todayserver.domain.friend.entity.FriendStatus;
 import com.example.todayserver.domain.friend.repository.FriendRepository;
 import com.example.todayserver.domain.member.entity.Member;
 import com.example.todayserver.domain.member.repository.MemberRepository;
+import com.example.todayserver.domain.notification.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +21,7 @@ public class FriendCommandService {
 
     private final FriendRepository friendRepository;
     private final MemberRepository memberRepository;
+    private final NotificationRepository notificationRepository;
 
     public String requestOrCancelFriend(Member requester, Long receiverId) {
         // 자신에게 요청 확인
@@ -45,7 +49,19 @@ public class FriendCommandService {
                     .status(FriendStatus.PENDING)
                     .isSharingCalendar(true) // 기본값 ON
                     .build();
-            friendRepository.save(friend);
+            // 친구 요청 저장
+            Friend savedFriend = friendRepository.save(friend);
+
+            // 상대방에게 알림 생성
+            Notification notification = Notification.builder()
+                    .receiver(receiver) // 요청 받는 사람
+                    .content(requester.getNickname() + "님이 친구 요청을 보냈습니다.")
+                    .type(NotificationType.FRIEND_REQUEST)
+                    .targetId(friend.getId()) // 수락/거절에 사용하는 friend의 ID
+                    .build();
+
+            notificationRepository.save(notification);
+
             return "친구 요청 완료";
         }
     }
