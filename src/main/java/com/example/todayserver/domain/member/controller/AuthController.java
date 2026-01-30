@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/auth")
 @Tag(name = "Auth", description = "로그인, 인증 관련 API")
 public class AuthController implements AuthControllerDocs {
 
@@ -24,53 +25,53 @@ public class AuthController implements AuthControllerDocs {
     private final AuthService authService;
     private final TokenService tokenService;
 
-    @PostMapping("/members/email/check")
+    @PostMapping("/email/check")
     public ApiResponse<Void> checkEmail(@Valid @RequestBody EmailReqDto.EmailCheck dto) {
         memberService.checkEmailDuplicate(dto.getEmail());
         return ApiResponse.success(null);
     }
 
-    @PostMapping("/auth/email/verification-codes")
+    @PostMapping("/email/verification-codes")
     public ApiResponse<Void> sendEmailVerification(@Valid @RequestBody EmailReqDto.EmailCheck dto) {
         emailService.sendVerificationEmail(dto.getEmail(), "email_code");
         return ApiResponse.success(null);
     }
 
-    @PostMapping("/auth/email/verification-codes/verify")
+    @PostMapping("/email/verification-codes/verify")
     public ApiResponse<Void> checkEmailVerification(@Valid @RequestBody EmailReqDto.EmailCode dto){
         emailService.checkEmailVerifyCode(dto.getEmail(), dto.getCode());
         return ApiResponse.success(null);
     }
 
-    @PostMapping("/members/password/verification-codes")
+    @PostMapping("/password/verification-codes")
     public ApiResponse<Void> sendPasswordResetVerification(@Valid @RequestBody EmailReqDto.EmailCheck dto){
         emailService.sendVerificationEmail(dto.getEmail(), "password_code");
         return ApiResponse.success(null);
     }
 
-    @PostMapping("/members/password/verification-codes/verify")
+    @PostMapping("/password/verification-codes/verify")
     public ApiResponse<Void> checkPasswordResetVerification(@Valid @RequestBody EmailReqDto.EmailCode dto){
         emailService.checkEmailVerifyCode(dto.getEmail(), dto.getCode());
         return ApiResponse.success(null);
     }
 
-    @PostMapping("/auth/signup/email")
+    @PostMapping("/signup/email")
     public ApiResponse<Void> emailSignup(@Valid @RequestBody MemberReqDto.SignupDto dto){
         memberService.emailSignup(dto);
         return ApiResponse.success(null);
     }
 
-    @PostMapping("/auth/login/email")
+    @PostMapping("/login/email")
     public ApiResponse<MemberResDto.LoginDto> emailLogin(@Valid @RequestBody MemberReqDto.LoginDto dto){
         return ApiResponse.success(authService.emailLogin(dto));
     }
 
-    @PostMapping("/auth/token/reissue")
+    @PostMapping("/token/reissue")
     public ApiResponse<TokenDto> reissue(@Valid @RequestBody TokenReissueDto dto){
         return ApiResponse.success(tokenService.reissueTokens(dto));
     }
 
-    @PostMapping("/auth/logout")
+    @PostMapping("/logout")
     public ApiResponse<Void> logout(@Valid @RequestBody TokenReissueDto dto,
                                     HttpServletRequest request, HttpServletResponse response){
         tokenService.logout(dto);
