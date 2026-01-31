@@ -47,6 +47,13 @@ public class MemberController implements MemberControllerDocs {
         return ApiResponse.success(null);
     }
 
+    @PatchMapping("/password/reset")
+    public ApiResponse<Void> updatePasswordRest(@Valid @RequestBody MemberReqDto.LoginDto dto){
+        memberService.updatePasswordReset(dto.getPassword(), dto.getEmail());
+        return ApiResponse.success(null);
+    }
+
+
     @PatchMapping(value = "/profile",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<Void> updateProfile(@RequestHeader("Authorization") String token, @ModelAttribute MemberReqDto.ProfileInfo dto){

@@ -5,7 +5,6 @@ import com.example.todayserver.domain.member.converter.PreferenceConverter;
 import com.example.todayserver.domain.member.dto.MemberReqDto;
 import com.example.todayserver.domain.member.dto.MemberResDto;
 import com.example.todayserver.domain.member.entity.Member;
-import com.example.todayserver.domain.member.entity.Preference;
 import com.example.todayserver.domain.member.enums.SocialType;
 import com.example.todayserver.domain.member.excpetion.AuthException;
 import com.example.todayserver.domain.member.excpetion.MemberException;
@@ -26,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -51,7 +51,7 @@ public class MemberServiceImpl implements MemberService {
     public void emailSignup(MemberReqDto.SignupDto dto) {
         String email = dto.getEmail();
         checkEmailDuplicate(email);
-        if (!emailCodeRepository.existsByEmailAndVerifiedIsTrue(email)) {
+        if (!emailCodeRepository.existsByEmailAndVerifiedIsTrueAndExpireDateAfter(email, LocalDateTime.now())){
             throw new AuthException(AuthErrorCode.INVALID_EMAIL);
         }
         memberWithdrawService.checkWithdraw(email);
@@ -120,6 +120,21 @@ public class MemberServiceImpl implements MemberService {
     public void updatePassword(String password, String token) {
         String email = getEmailByAccessToken(token);
         Member member = getMemberByEmail(email);
+        if (!member.getSocialType().equals(SocialType.EMAIL)){
+            throw new MemberException(MemberErrorCode.NO_PASSWORD);
+        }
+        memberRepository.updatePassword(password, member.getId());
+    }
+
+    @Transactional
+    @Override
+    public void updatePasswordReset(String password, String email) {
+        if (!emailCodeRepository.existsByEmailAndVerifiedIsTrueAndExpireDateAfter(email, LocalDateTime.now())){
+            throw new AuthException(AuthErrorCode.INVALID_EMAIL);
+        }
+        memberWithdrawService.checkWithdraw(email);
+        Member member = getMemberByEmail(email);
+
         if (!member.getSocialType().equals(SocialType.EMAIL)){
             throw new MemberException(MemberErrorCode.NO_PASSWORD);
         }
