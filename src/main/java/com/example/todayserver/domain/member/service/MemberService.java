@@ -3,6 +3,7 @@ package com.example.todayserver.domain.member.service;
 import com.example.todayserver.domain.member.dto.MemberReqDto;
 import com.example.todayserver.domain.member.dto.MemberResDto;
 import com.example.todayserver.domain.member.entity.Member;
+import jakarta.transaction.Transactional;
 
 public interface MemberService {
 
@@ -14,5 +15,9 @@ public interface MemberService {
     MemberResDto.MemberInfo getMyInfo(String token);
     void withdraw(String token);
     void updatePassword(String password, String token);
+
+    @Transactional
+    void updatePasswordReset(String password, String token);
+
     void updateProfile(String token, MemberReqDto.ProfileInfo dto);
 }
