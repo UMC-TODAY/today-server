@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/preferences/members")
+@RequestMapping("/api/preferences/members")
 @Tag(name = "Preference", description = "회원정보 관련 API")
 public class PreferenceController implements PreferenceControllerDocs{
 
