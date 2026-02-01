@@ -123,7 +123,8 @@ public class MemberServiceImpl implements MemberService {
         if (!member.getSocialType().equals(SocialType.EMAIL)){
             throw new MemberException(MemberErrorCode.NO_PASSWORD);
         }
-        memberRepository.updatePassword(password, member.getId());
+        String salt = passwordEncoder.encode(password);
+        memberRepository.updatePassword(salt, member.getId());
     }
 
     @Transactional
@@ -138,7 +139,8 @@ public class MemberServiceImpl implements MemberService {
         if (!member.getSocialType().equals(SocialType.EMAIL)){
             throw new MemberException(MemberErrorCode.NO_PASSWORD);
         }
-        memberRepository.updatePassword(password, member.getId());
+        String salt = passwordEncoder.encode(password);
+        memberRepository.updatePassword(salt, member.getId());
     }
 
     @Transactional
