@@ -51,7 +51,7 @@ public class MemberServiceImpl implements MemberService {
     public void emailSignup(MemberReqDto.SignupDto dto) {
         String email = dto.getEmail();
         checkEmailDuplicate(email);
-        if (!emailCodeRepository.existsByEmailAndVerifiedIsTrueAndExpireDateAfter(email, LocalDateTime.now())){
+        if (!emailCodeRepository.existsByEmailAndVerifiedIsTrueAndExpireDateAfter(email, LocalDateTime.now().minusDays(1))){
             throw new AuthException(AuthErrorCode.INVALID_EMAIL);
         }
         memberWithdrawService.checkWithdraw(email);
@@ -129,7 +129,7 @@ public class MemberServiceImpl implements MemberService {
     @Transactional
     @Override
     public void updatePasswordReset(String password, String email) {
-        if (!emailCodeRepository.existsByEmailAndVerifiedIsTrueAndExpireDateAfter(email, LocalDateTime.now())){
+        if (!emailCodeRepository.existsByEmailAndVerifiedIsTrueAndExpireDateAfter(email, LocalDateTime.now().minusDays(1))){
             throw new AuthException(AuthErrorCode.INVALID_EMAIL);
         }
         memberWithdrawService.checkWithdraw(email);
