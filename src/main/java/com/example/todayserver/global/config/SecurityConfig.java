@@ -6,6 +6,7 @@ import com.example.todayserver.global.common.jwt.JwtAuthFilter;
 import com.example.todayserver.global.common.jwt.JwtUtil;
 import com.example.todayserver.global.oauth.OAuth2SuccessHandler;
 import com.example.todayserver.global.oauth.OAuth2UserCustomService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -41,6 +42,17 @@ public class SecurityConfig {
                         .requestMatchers(allowUris).permitAll()
                         .anyRequest().authenticated()
                 )
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.setContentType("application/json;charset=UTF-8");
+                            response.getWriter().write("""
+                    {
+                      "code": "LOGIN_REQUIRED",
+                      "message": "로그인이 필요한 서비스입니다."
+                    }
+                    """);
+                }))
                 // 폼로그인 비활성화
                 .formLogin(AbstractHttpConfigurer::disable)
                 .addFilterBefore(jwtAuthFilter(), UsernamePasswordAuthenticationFilter.class)
