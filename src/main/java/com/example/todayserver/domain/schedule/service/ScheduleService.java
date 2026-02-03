@@ -74,15 +74,16 @@ public class ScheduleService {
         Integer month = req.month();
 
         // filter가 null 또는 공백이면 ALL로 처리
-        String filterLabel = (req.filter() == null || req.filter().isBlank()) ? "ALL" : req.filter().toUpperCase();
+        String filterLabel = normalizeFilter(req.filter());
 
         // 해당 연/월의 1일 ~ 말일 계산
         LocalDate startDate = LocalDate.of(year, month, 1);
         LocalDate endDate = startDate.plusMonths(1).minusDays(1);
 
         // DATETIME 범위 (startedAt 기준)
-        LocalDateTime startedAtFrom = startDate.atStartOfDay();
-        LocalDateTime startedAtTo = endDate.atTime(23, 59, 59);
+        LocalDateTime[] range = toDateTimeRange(startDate, endDate);
+        LocalDateTime startedAtFrom = range[0];
+        LocalDateTime startedAtTo = range[1];
 
         // 지난 일정 숨기기 여부 (null 이면 false)
         boolean hidePast = Boolean.TRUE.equals(req.hidePast());
@@ -131,7 +132,6 @@ public class ScheduleService {
                         .toList();
             }
         }
-
         return eventMonthlyConverter.toEventMonthlyListRes(filterLabel, schedules);
     }
 
@@ -163,26 +163,13 @@ public class ScheduleService {
         }
 
         // filter가 null 또는 공백이면 ALL로 처리
-        String filterLabel = (req.filter() == null || req.filter().isBlank())
-                ? "ALL"
-                : req.filter().toUpperCase();
-
-//        // 현재 스펙: ALL만 허용
-//        if (!"ALL".equals(filterLabel)) {
-//            throw new CustomException(ErrorCode.SCHEDULE_TODO_FILTER_INVALID);
-//        }
+        String filterLabel = normalizeFilter(req.filter());
 
         // 조회 범위 계산
-        LocalDateTime startedAtFrom = fromDate.atStartOfDay();
-        LocalDateTime startedAtTo = toDate.atTime(23, 59, 59);
-
-        // 지난 할일 숨기기 (null이면 false)
-        if (Boolean.TRUE.equals(req.hidePast())) {
-            LocalDateTime now = LocalDateTime.now();
-            if (now.isAfter(startedAtFrom)) {
-                startedAtFrom = now;
-            }
-        }
+        LocalDateTime[] range = toDateTimeRange(fromDate, toDate);
+        LocalDateTime startedAtFrom =
+                applyHidePast(range[0], Boolean.TRUE.equals(req.hidePast()));
+        LocalDateTime startedAtTo = range[1];
 
         List<Schedule> schedules = scheduleRepository.findTodosInRangeIncludingAnytime(
                 memberId,
@@ -193,7 +180,6 @@ public class ScheduleService {
 
         return todoRangeConverter.toTodoRangeListRes(filterLabel, schedules, DATE_FMT);
     }
-
 
     // 월별 일정 완료 현황 조회
     @Transactional(readOnly = true)
@@ -380,5 +366,26 @@ public class ScheduleService {
         }
 
         return List.copyOf(allowedSources);
+    }
+
+    // filter 문자열 정규화 (null/blank -> ALL)
+    private String normalizeFilter(String filter) {
+        return (filter == null || filter.isBlank()) ? "ALL" : filter.toUpperCase();
+    }
+
+    // LocalDate -> LocalDateTime 범위 변환
+    private LocalDateTime[] toDateTimeRange(LocalDate fromDate, LocalDate toDate) {
+        return new LocalDateTime[]{
+                fromDate.atStartOfDay(),
+                toDate.atTime(23, 59, 59)
+        };
+    }
+
+    // hidePast 적용 (현재 시각 기준)
+    private LocalDateTime applyHidePast(LocalDateTime startedAtFrom, boolean hidePast) {
+        if (!hidePast) return startedAtFrom;
+
+        LocalDateTime now = LocalDateTime.now();
+        return now.isAfter(startedAtFrom) ? now : startedAtFrom;
     }
 }
