@@ -9,9 +9,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -98,6 +96,30 @@ public class ScheduleController {
         EventMonthlyCompletionRes res =
                 scheduleService.getMonthlyEventCompletion(memberId, year, month);
 
+        return ApiResponse.success(res);
+    }
+
+    @Operation(summary = "기간별 할일 완료 현황 조회", description = "기간별 할일 완료 현황을 조회합니다.")
+    @GetMapping("/todos/completion")
+    public ApiResponse<TodoRangeCompletionRes> getTodoCompletionInRange(
+            @AuthenticationPrincipal(expression = "id") Long memberId,
+            @RequestParam
+            @NotBlank(message = "from 날짜는 필수입니다.")
+            @Pattern(
+                    regexp = "\\d{4}-\\d{2}-\\d{2}",
+                    message = "from 날짜 형식은 yyyy-MM-dd 여야 합니다."
+            )
+            String from,
+
+            @RequestParam
+            @NotBlank(message = "to 날짜는 필수입니다.")
+            @Pattern(
+                    regexp = "\\d{4}-\\d{2}-\\d{2}",
+                    message = "to 날짜 형식은 yyyy-MM-dd 여야 합니다."
+            )
+            String to
+    ) {
+        TodoRangeCompletionRes res = scheduleService.getTodoCompletionInRange(memberId, from, to);
         return ApiResponse.success(res);
     }
 

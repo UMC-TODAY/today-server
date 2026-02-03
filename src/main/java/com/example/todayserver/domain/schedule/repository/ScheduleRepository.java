@@ -58,6 +58,43 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
             List<ScheduleSource> sources
     );
 
+    // 기간 내 TASK(ANYTIME 포함) 전체 개수 집계
+    @Query("""
+        select count(s)
+        from Schedule s
+        where s.member.id = :memberId
+          and s.scheduleType = :scheduleType
+          and (
+                (s.startedAt between :from and :to)
+                or s.startedAt is null
+              )
+    """)
+    long countTodosInRangeIncludingAnytime(
+            @Param("memberId") Long memberId,
+            @Param("scheduleType") ScheduleType scheduleType,
+            @Param("from") LocalDateTime startedAtFrom,
+            @Param("to") LocalDateTime startedAtTo
+    );
+
+    // 기간 내 완료된 TASK(ANYTIME 포함) 개수 집계
+    @Query("""
+        select count(s)
+        from Schedule s
+        where s.member.id = :memberId
+          and s.scheduleType = :scheduleType
+          and s.isDone = true
+          and (
+                (s.startedAt between :from and :to)
+                or s.startedAt is null
+              )
+    """)
+    long countTodosInRangeIncludingAnytimeDoneTrue(
+            @Param("memberId") Long memberId,
+            @Param("scheduleType") ScheduleType scheduleType,
+            @Param("from") LocalDateTime startedAtFrom,
+            @Param("to") LocalDateTime startedAtTo
+    );
+
     // 조회 기간 내 TODO와 startedAt이 없는(ANYTIME) TODO 함께 조회
     @Query("""
     SELECT s

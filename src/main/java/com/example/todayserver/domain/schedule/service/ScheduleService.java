@@ -43,6 +43,7 @@ public class ScheduleService {
     private final ScheduleDetailConverter scheduleDetailConverter;
     private final ScheduleUpdateConverter scheduleUpdateConverter;
     private final TodoRangeConverter todoRangeConverter;
+    private final TodoRangeCompletionConverter todoRangeCompletionConverter;
 
     private static final DateTimeFormatter DATE_FMT =
             DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -209,6 +210,52 @@ public class ScheduleService {
         );
 
         return EventMonthlyCompletionRes.of(year, month, total, completed);
+    }
+
+    // 기간별 할 일 완료 현황 조회
+    @Transactional(readOnly = true)
+    public TodoRangeCompletionRes getTodoCompletionInRange(Long memberId, String from, String to) {
+
+        // from/to 누락 검증
+        if (from == null || from.isBlank() || to == null || to.isBlank()) {
+            throw new CustomException(ErrorCode.SCHEDULE_TODO_RANGE_DATE_REQUIRED);
+        }
+
+        // from/to 형식 파싱
+        LocalDate fromDate;
+        LocalDate toDate;
+        try {
+            fromDate = LocalDate.parse(from, DATE_FMT);
+            toDate = LocalDate.parse(to, DATE_FMT);
+        } catch (DateTimeParseException e) {
+            throw new CustomException(ErrorCode.SCHEDULE_TODO_RANGE_DATE_FORMAT_INVALID);
+        }
+
+        // 기간 순서 검증
+        if (toDate.isBefore(fromDate)) {
+            throw new CustomException(ErrorCode.SCHEDULE_TODO_RANGE_ORDER_INVALID);
+        }
+
+        // DATETIME 범위 (startedAt 기준)
+        LocalDateTime[] range = toDateTimeRange(fromDate, toDate);
+        LocalDateTime startedAtFrom = range[0];
+        LocalDateTime startedAtTo = range[1];
+
+        long total = scheduleRepository.countTodosInRangeIncludingAnytime(
+                memberId,
+                ScheduleType.TASK,
+                startedAtFrom,
+                startedAtTo
+        );
+
+        long completed = scheduleRepository.countTodosInRangeIncludingAnytimeDoneTrue(
+                memberId,
+                ScheduleType.TASK,
+                startedAtFrom,
+                startedAtTo
+        );
+
+        return todoRangeCompletionConverter.toRes(from, to, total, completed);
     }
 
     // 일정 상세 조회
