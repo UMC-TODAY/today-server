@@ -22,6 +22,10 @@ public enum ErrorCode implements BaseErrorCode {
     SCHEDULE_REPEAT_TYPE_REQUIRED(HttpStatus.BAD_REQUEST, "SCHEDULE400_5", "repeatType은 필수 입력입니다."),
     SCHEDULE_DURATION_INVALID(HttpStatus.BAD_REQUEST, "SCHEDULE400_6", "duration은 1분 이상이어야 합니다."),
     SCHEDULE_TODO_CUSTOM_DATE_REQUIRED(HttpStatus.BAD_REQUEST, "SCHEDULE400_7", "date는 필수 입력입니다."),
+    SCHEDULE_TODO_RANGE_DATE_REQUIRED(HttpStatus.BAD_REQUEST, "SCHEDULE400_8", "from과 to는 필수 값입니다."),
+    SCHEDULE_TODO_RANGE_DATE_FORMAT_INVALID(HttpStatus.BAD_REQUEST, "SCHEDULE400_9", "from/to는 'yyyy-MM-dd' 형식이어야 합니다."),
+    SCHEDULE_TODO_RANGE_ORDER_INVALID(HttpStatus.BAD_REQUEST, "SCHEDULE400_10", "to는 from 이후(또는 동일) 날짜여야 합니다."),
+    SCHEDULE_TODO_FILTER_INVALID(HttpStatus.BAD_REQUEST, "SCHEDULE400_11", "filter 값이 올바르지 않습니다."),
     SCHEDULE_NOT_FOUND(HttpStatus.NOT_FOUND, "SCHEDULE404_1", "일정을 찾을 수 없습니다."),
 
     // External
