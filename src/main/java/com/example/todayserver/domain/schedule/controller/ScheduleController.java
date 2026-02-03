@@ -67,6 +67,16 @@ public class ScheduleController {
         return ApiResponse.success(res);
     }
 
+    @Operation(summary = "기간별 할일 조회", description = "from, to 기간 내의 할일을 조회합니다.")
+    @GetMapping("/todos")
+    public ApiResponse<TodoRangeListRes> getTodos(
+            @AuthenticationPrincipal(expression = "id") Long memberId,
+            @ModelAttribute TodoRangeSearchReq req
+    ) {
+        TodoRangeListRes res = scheduleService.getTodos(memberId, req);
+        return ApiResponse.success(res);
+    }
+
     @Operation(summary = "일정 단건 상세 조회", description = "로그인한 사용자의 일정/할일을 상세 조회합니다.")
     @GetMapping("/{scheduleId}")
     public ApiResponse<ScheduleDetailRes> getScheduleDetail(
@@ -146,7 +156,4 @@ public class ScheduleController {
 
         return ApiResponse.success("요청하신 " + res.getDeleted_count() + "개의 항목이 삭제되었습니다.", res);
     }
-
-
-
 }

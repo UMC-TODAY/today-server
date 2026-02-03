@@ -6,10 +6,7 @@ import com.example.todayserver.domain.member.repository.MemberRepository;
 import com.example.todayserver.domain.schedule.connect.entity.ExternalAccount;
 import com.example.todayserver.domain.schedule.connect.enums.ExternalAccountStatus;
 import com.example.todayserver.domain.schedule.connect.repository.ExternalAccountRepository;
-import com.example.todayserver.domain.schedule.converter.EventMonthlyConverter;
-import com.example.todayserver.domain.schedule.converter.ScheduleCreateConverter;
-import com.example.todayserver.domain.schedule.converter.ScheduleDetailConverter;
-import com.example.todayserver.domain.schedule.converter.ScheduleUpdateConverter;
+import com.example.todayserver.domain.schedule.converter.*;
 import com.example.todayserver.domain.schedule.dto.*;
 import com.example.todayserver.domain.schedule.entity.Schedule;
 import com.example.todayserver.domain.schedule.entity.SubSchedule;
@@ -27,6 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -43,6 +42,10 @@ public class ScheduleService {
     private final ScheduleCreateValidator scheduleCreateValidator;
     private final ScheduleDetailConverter scheduleDetailConverter;
     private final ScheduleUpdateConverter scheduleUpdateConverter;
+    private final TodoRangeConverter todoRangeConverter;
+
+    private static final DateTimeFormatter DATE_FMT =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
 
     @Transactional
@@ -71,15 +74,16 @@ public class ScheduleService {
         Integer month = req.month();
 
         // filter가 null 또는 공백이면 ALL로 처리
-        String filterLabel = (req.filter() == null || req.filter().isBlank()) ? "ALL" : req.filter().toUpperCase();
+        String filterLabel = normalizeFilter(req.filter());
 
         // 해당 연/월의 1일 ~ 말일 계산
         LocalDate startDate = LocalDate.of(year, month, 1);
         LocalDate endDate = startDate.plusMonths(1).minusDays(1);
 
         // DATETIME 범위 (startedAt 기준)
-        LocalDateTime startedAtFrom = startDate.atStartOfDay();
-        LocalDateTime startedAtTo = endDate.atTime(23, 59, 59);
+        LocalDateTime[] range = toDateTimeRange(startDate, endDate);
+        LocalDateTime startedAtFrom = range[0];
+        LocalDateTime startedAtTo = range[1];
 
         // 지난 일정 숨기기 여부 (null 이면 false)
         boolean hidePast = Boolean.TRUE.equals(req.hidePast());
@@ -128,8 +132,53 @@ public class ScheduleService {
                         .toList();
             }
         }
-
         return eventMonthlyConverter.toEventMonthlyListRes(filterLabel, schedules);
+    }
+
+    // 기간 내 todo(task) 조회
+    @Transactional(readOnly = true)
+    public TodoRangeListRes getTodos(Long memberId, TodoRangeSearchReq req) {
+
+        String from = req.from();
+        String to = req.to();
+
+        // from/to 누락 검증
+        if (from == null || from.isBlank() || to == null || to.isBlank()) {
+            throw new CustomException(ErrorCode.SCHEDULE_TODO_RANGE_DATE_REQUIRED);
+        }
+
+        // from/to 형식 파싱
+        LocalDate fromDate;
+        LocalDate toDate;
+        try {
+            fromDate = LocalDate.parse(from, DATE_FMT);
+            toDate = LocalDate.parse(to, DATE_FMT);
+        } catch (DateTimeParseException e) {
+            throw new CustomException(ErrorCode.SCHEDULE_TODO_RANGE_DATE_FORMAT_INVALID);
+        }
+
+        // 기간 순서 검증
+        if (toDate.isBefore(fromDate)) {
+            throw new CustomException(ErrorCode.SCHEDULE_TODO_RANGE_ORDER_INVALID);
+        }
+
+        // filter가 null 또는 공백이면 ALL로 처리
+        String filterLabel = normalizeFilter(req.filter());
+
+        // 조회 범위 계산
+        LocalDateTime[] range = toDateTimeRange(fromDate, toDate);
+        LocalDateTime startedAtFrom =
+                applyHidePast(range[0], Boolean.TRUE.equals(req.hidePast()));
+        LocalDateTime startedAtTo = range[1];
+
+        List<Schedule> schedules = scheduleRepository.findTodosInRangeIncludingAnytime(
+                memberId,
+                ScheduleType.TASK,
+                startedAtFrom,
+                startedAtTo
+        );
+
+        return todoRangeConverter.toTodoRangeListRes(filterLabel, schedules, DATE_FMT);
     }
 
     // 월별 일정 완료 현황 조회
@@ -317,5 +366,26 @@ public class ScheduleService {
         }
 
         return List.copyOf(allowedSources);
+    }
+
+    // filter 문자열 정규화 (null/blank -> ALL)
+    private String normalizeFilter(String filter) {
+        return (filter == null || filter.isBlank()) ? "ALL" : filter.toUpperCase();
+    }
+
+    // LocalDate -> LocalDateTime 범위 변환
+    private LocalDateTime[] toDateTimeRange(LocalDate fromDate, LocalDate toDate) {
+        return new LocalDateTime[]{
+                fromDate.atStartOfDay(),
+                toDate.atTime(23, 59, 59)
+        };
+    }
+
+    // hidePast 적용 (현재 시각 기준)
+    private LocalDateTime applyHidePast(LocalDateTime startedAtFrom, boolean hidePast) {
+        if (!hidePast) return startedAtFrom;
+
+        LocalDateTime now = LocalDateTime.now();
+        return now.isAfter(startedAtFrom) ? now : startedAtFrom;
     }
 }
