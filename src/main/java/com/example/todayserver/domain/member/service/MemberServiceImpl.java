@@ -145,19 +145,20 @@ public class MemberServiceImpl implements MemberService {
 
     @Transactional
     @Override
-    public void updateProfile(String token, MemberReqDto.ProfileInfo dto) {
-        String email = getEmailByAccessToken(token);
-        Member member = getMemberByEmail(email);
+    public void updateProfile(String token, MultipartFile profileImage, String nickName) {
+        Member member = getMemberByEmail(getEmailByAccessToken(token));
 
-        MultipartFile profileImage = dto.getProfileImage();
-        String nickname = dto.getNickName();
+        if (profileImage != null && !profileImage.isEmpty()) {
+            try {
+                String imageUrl = awsFileService.saveProfileImg(profileImage, member.getId());
+                member.updateProfileImage(imageUrl);
+            } catch (IOException e) {
+                throw new MemberException(MemberErrorCode.IMAGE_UPLOAD_FAIL);
+            }
+        }
 
-
-        try {
-            String imageUrl = awsFileService.saveProfileImg(profileImage, member.getId());
-            memberRepository.updateProfile(imageUrl, nickname, member.getId());
-        } catch (IOException e) {
-            throw new MemberException(MemberErrorCode.IMAGE_UPLOAD_FAIL);
+        if (nickName != null) {
+            member.updateNickname(nickName);
         }
     }
 
