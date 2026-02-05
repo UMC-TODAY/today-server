@@ -5,10 +5,8 @@ import com.example.todayserver.domain.member.dto.MemberResDto;
 import com.example.todayserver.global.common.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface MemberControllerDocs {
     @Operation(
@@ -52,5 +50,9 @@ public interface MemberControllerDocs {
             summary = "프로필 정보 수정 API",
             description = "닉네임과 프로필 사진을 수정합니다."
     )
-    ApiResponse<Void> updateProfile(@RequestHeader("Authorization") String token, @ModelAttribute MemberReqDto.ProfileInfo dto);
+    ApiResponse<Void> updateProfile(
+            @RequestHeader("Authorization") String token,
+            @RequestPart(required = false) MultipartFile profileImage,
+            @RequestPart(required = false) String nickName
+    );
 }

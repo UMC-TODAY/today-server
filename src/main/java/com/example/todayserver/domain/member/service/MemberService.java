@@ -4,6 +4,7 @@ import com.example.todayserver.domain.member.dto.MemberReqDto;
 import com.example.todayserver.domain.member.dto.MemberResDto;
 import com.example.todayserver.domain.member.entity.Member;
 import jakarta.transaction.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface MemberService {
 
@@ -19,5 +20,6 @@ public interface MemberService {
     @Transactional
     void updatePasswordReset(String password, String token);
 
-    void updateProfile(String token, MemberReqDto.ProfileInfo dto);
+    @Transactional
+    void updateProfile(String token, MultipartFile profileImage, String nickName);
 }

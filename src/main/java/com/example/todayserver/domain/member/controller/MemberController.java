@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
@@ -53,11 +54,14 @@ public class MemberController implements MemberControllerDocs {
         return ApiResponse.success(null);
     }
 
-
-    @PatchMapping(value = "/profile",
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ApiResponse<Void> updateProfile(@RequestHeader("Authorization") String token, @ModelAttribute MemberReqDto.ProfileInfo dto){
-        memberService.updateProfile(token, dto);
+    @PatchMapping(value = "/profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponse<Void> updateProfile(
+            @RequestHeader("Authorization") String token,
+            @RequestPart(required = false) MultipartFile profileImage,
+            @RequestPart(required = false) String nickName
+    ) {
+        memberService.updateProfile(token, profileImage, nickName);
         return ApiResponse.success(null);
     }
+
 }
