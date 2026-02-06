@@ -390,12 +390,17 @@ public class ScheduleService {
     }
 
     // 요청한 id 목록에 대해 본인 소유인 schedule만 일괄 삭제하고 삭제된 개수를 반환
+    // FK(sub_schedule -> schedule) 때문에 sub_schedule을 먼저 삭제한 뒤 schedule을 삭제한다
     @Transactional
     public ScheduleBulkDeleteResponse deleteSchedulesBulk(Long memberId, ScheduleBulkDeleteRequest req) {
         if (req.getIds() == null || req.getIds().isEmpty()) {
             return new ScheduleBulkDeleteResponse(0);
         }
 
+        // FK 제약 때문에 먼저 자식 테이블(sub_schedule)부터 삭제
+        subScheduleRepository.deleteAllByMemberIdAndScheduleIdIn(memberId, req.getIds());
+
+        // 그 다음 부모(schedule) 삭제
         int deleted = scheduleRepository.deleteAllByMemberIdAndIdIn(memberId, req.getIds());
 
         return new ScheduleBulkDeleteResponse(deleted);
