@@ -172,10 +172,11 @@ public class ScheduleController {
     @DeleteMapping("/bulk")
     public ApiResponse<ScheduleBulkDeleteResponse> deleteSchedulesBulk(
             @AuthenticationPrincipal(expression = "id") Long memberId,
-            @RequestBody ScheduleBulkDeleteRequest req
+            @RequestBody @Valid ScheduleBulkDeleteRequest req
     ) {
         ScheduleBulkDeleteResponse res = scheduleService.deleteSchedulesBulk(memberId, req);
 
-        return ApiResponse.success("요청하신 " + res.getDeleted_count() + "개의 항목이 삭제되었습니다.", res);
+        return ApiResponse.success("요청하신 " + res.getDeletedCount() + "개의 항목이 삭제되었습니다.", res);
     }
+
 }

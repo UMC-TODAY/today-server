@@ -13,6 +13,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Builder
@@ -73,7 +75,12 @@ public class Schedule extends BaseEntity {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    //isDone의 상태를 업데이트 하기 위한 매서드
+    // Schedule 삭제 시 연결된 SubSchedule도 함께 삭제되도록 설정
+    @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<SubSchedule> subSchedules = new ArrayList<>();
+
+    // isDone의 상태를 업데이트 하기 위한 메서드
     public void updateDone(boolean isDone) {
         this.isDone = isDone;
     }
