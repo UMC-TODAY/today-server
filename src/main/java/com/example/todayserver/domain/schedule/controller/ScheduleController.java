@@ -141,14 +141,14 @@ public class ScheduleController {
     public ApiResponse<ScheduleStatusUpdateResponse> updateScheduleStatus(
             @AuthenticationPrincipal(expression = "id") Long memberId,
             @PathVariable Long id,
-            @RequestBody ScheduleStatusUpdateRequest req
+            @RequestBody @Valid ScheduleStatusUpdateRequest req
     ) {
-
         ScheduleStatusUpdateResponse res =
                 scheduleService.updateScheduleStatus(memberId, id, req);
 
         return ApiResponse.success("상태가 업데이트되었습니다.", res);
     }
+
 
     // 내 일정/할 일을 조건(완료여부/카테고리/날짜/키워드)으로 필터링해서 목록으로 반환
     @Operation(summary = "할일/일정 필터링 및 검색", description = "조건에 따라 내 일정/할일 목록을 조회합니다.")

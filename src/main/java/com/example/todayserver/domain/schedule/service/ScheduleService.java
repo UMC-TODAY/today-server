@@ -327,6 +327,7 @@ public class ScheduleService {
         List<SubSchedule> latestSubs = subScheduleRepository.findAllBySchedule_Id(schedule.getId());
         return scheduleDetailConverter.toDetailRes(schedule, latestSubs);
     }
+
     // 로그인한 사용자(memberId)의 일정(scheduleId)을 찾아 요청값(is_done)으로 완료 상태를 변경
     // 일정이 없거나 본인 소유가 아니면 예외를 발생시키고, 변경된 id/is_done 값을 응답 DTO로 반환
     @Transactional
@@ -334,10 +335,11 @@ public class ScheduleService {
         Schedule schedule = scheduleRepository.findByIdAndMember_Id(scheduleId, memberId)
                 .orElseThrow(() -> new CustomException(MemberErrorCode.NOT_FOUND));
 
-        schedule.updateDone(req.is_done());
+        schedule.updateDone(req.getIsDone());
 
         return new ScheduleStatusUpdateResponse(schedule.getId(), schedule.isDone());
     }
+
 
     // 내 일정/할 일을 조건(완료여부/타입/날짜/키워드)으로 조회해서 응답 DTO 리스트로 변환
     @Transactional(readOnly = true)
