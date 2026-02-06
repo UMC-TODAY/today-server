@@ -46,4 +46,26 @@ public class FriendQueryService {
                 .isSharingCalendar(friend.isSharingCalendar())
                 .build();
     }
+
+    // 친구 닉네임 검색
+    public FriendResponseDTO.FriendListDTO searchFriends(Member loginMember, String keyword) {
+        // 내가 보낸 요청 중 수락됨 + 상대방 닉네임에 키워드 포함
+        List<Friend> searchAsRequester = friendRepository.findAllByRequesterAndStatusAndReceiverNicknameContaining(
+                loginMember, FriendStatus.ACCEPTED, keyword);
+
+        // 내가 받은 요청 중 수락됨 + 상대방 닉네임에 키워드 포함
+        List<Friend> searchAsReceiver = friendRepository.findAllByReceiverAndStatusAndRequesterNicknameContaining(
+                loginMember, FriendStatus.ACCEPTED, keyword);
+
+        List<FriendResponseDTO.FriendInfoDTO> friendInfos = new java.util.ArrayList<>();
+
+        // 상대방 정보 추출 (기존 mapToInfo 메서드 재사용)
+        searchAsRequester.forEach(f -> friendInfos.add(mapToInfo(f, f.getReceiver())));
+        searchAsReceiver.forEach(f -> friendInfos.add(mapToInfo(f, f.getRequester())));
+
+        return FriendResponseDTO.FriendListDTO.builder()
+                .friends(friendInfos)
+                .friendCount(friendInfos.size())
+                .build();
+    }
 }

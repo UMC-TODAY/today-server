@@ -55,4 +55,14 @@ public class FriendController {
         String result = friendCommandService.toggleCalendarSharing(loginMember, friendRecordId);
         return ApiResponse.success(result);
     }
+
+    @Operation(summary = "친구 검색", description = "닉네임으로 내 친구 목록을 검색합니다.")
+    @GetMapping("/search")
+    public ApiResponse<FriendResponseDTO.FriendListDTO> searchFriends(
+            @AuthenticationPrincipal Member loginMember,
+            @RequestParam(name = "keyword") String keyword) {
+
+        // QueryService의 검색 메서드 호출
+        return ApiResponse.success(friendQueryService.searchFriends(loginMember, keyword));
+    }
 }
