@@ -2,6 +2,7 @@ package com.example.todayserver.domain.analysis.controller;
 
 import com.example.todayserver.domain.analysis.dto.request.DifficultyRequest;
 import com.example.todayserver.domain.analysis.dto.request.FocusChecklistRequest;
+import com.example.todayserver.domain.analysis.dto.response.BadgeStatsResponse;
 import com.example.todayserver.domain.analysis.dto.response.DifficultyResponse;
 import com.example.todayserver.domain.analysis.dto.response.FocusChecklistResponse;
 import com.example.todayserver.domain.analysis.dto.response.GrassMapResponse;
@@ -91,5 +92,14 @@ public class AnalysisController {
         
         analysisService.updateFocusChecklistItem(itemId, request);
         return ApiResponse.success("체크리스트 항목 수정 성공", null);
+    }
+
+    @Operation(summary = "뱃지 및 완료 일정 통계 조회", description = "얻은 뱃지 수, 완료한 일정 수, 상위 랭킹을 조회합니다.")
+    @GetMapping("/badge-stats")
+    public ApiResponse<BadgeStatsResponse> getBadgeStats(
+            @AuthenticationPrincipal Member member) {
+        
+        BadgeStatsResponse response = analysisService.getBadgeStats(member);
+        return ApiResponse.success("뱃지 통계 조회 성공", response);
     }
 }
