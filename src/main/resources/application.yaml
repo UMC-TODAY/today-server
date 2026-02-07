@@ -45,7 +45,7 @@ spring:
             client-secret: ${NAVER_CLIENT_SECRET}
             client-name: Naver
             authorization-grant-type: authorization_code
-            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            redirect-uri: "http://107.20.245.245/login/oauth2/code/naver"
             scope:
               - name
               - email
