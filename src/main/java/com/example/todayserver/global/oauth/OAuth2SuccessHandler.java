@@ -48,7 +48,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         CookieUtil.addCookie(response, "refreshToken", tokenDto.getRefreshToken(), (int) Duration.ofDays(1).toSeconds());
 
         response.sendRedirect(
-                "http://localhost:3000/oauth/success?accessToken=" + tokenDto.getAccessToken()
+                "http://localhost:5173/dashboard?accessToken=" + tokenDto.getAccessToken()
         );
     }
 }
