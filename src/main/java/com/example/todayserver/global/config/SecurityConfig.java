@@ -30,8 +30,8 @@ public class SecurityConfig {
             "/swagger-ui/**",
             "/swagger-resources/**",
             "/v3/api-docs/**",
-            "/api/members/password/reset",
-            "/api/auth/**",
+            "/api/v1/members/password/reset",
+            "/api/v1/auth/**",
             "/api/oauth2/**",
             "/login/oauth2/**"
     };
