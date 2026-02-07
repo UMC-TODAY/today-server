@@ -33,7 +33,9 @@ public class SecurityConfig {
             "/api/v1/members/password/reset",
             "/api/v1/auth/**",
             "/api/oauth2/**",
-            "/login/oauth2/**"
+            "/login/oauth2/**",
+            "/oauth2/**",
+            "/favicon.ico"
     };
 
     @Bean
