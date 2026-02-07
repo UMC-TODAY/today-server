@@ -145,4 +145,34 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
       and s.id in :ids
     """)
     int deleteAllByMemberIdAndIdIn(@Param("memberId") Long memberId, @Param("ids") List<Long> ids);
+
+    // ==================== 뱃지 통계용 메서드 ====================
+
+    // 특정 회원의 전체 완료된 일정 수 (TASK + EVENT)
+    long countByMemberIdAndIsDoneTrue(Long memberId);
+
+    // 특정 날짜의 특정 타입 전체 일정 수
+    long countByMemberIdAndScheduleTypeAndStartedAtBetween(
+            Long memberId,
+            ScheduleType scheduleType,
+            LocalDateTime startedAtFrom,
+            LocalDateTime startedAtTo
+    );
+
+    // 특정 날짜의 특정 타입 완료된 일정 수
+    long countByMemberIdAndScheduleTypeAndStartedAtBetweenAndIsDoneTrue(
+            Long memberId,
+            ScheduleType scheduleType,
+            LocalDateTime startedAtFrom,
+            LocalDateTime startedAtTo
+    );
+
+    // 모든 회원별 완료 일정 수 집계 (랭킹 계산용)
+    @Query("""
+        SELECT s.member.id, COUNT(s)
+        FROM Schedule s
+        WHERE s.isDone = true
+        GROUP BY s.member.id
+    """)
+    List<Object[]> countCompletedSchedulesGroupByMember();
 }
