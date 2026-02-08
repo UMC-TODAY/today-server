@@ -112,7 +112,7 @@ public class MemberServiceImpl implements MemberService {
     public void withdraw(String token) {
         String email = getEmailByAccessToken(token);
         Member member = getMemberByEmail(email);
-        memberRepository.delete(member);
+        member.statusDeleted();
     }
 
     @Transactional

@@ -54,4 +54,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             }
             filterChain.doFilter(request, response);
     }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getRequestURI();
+        // 로그인 처리 URL은 필터를 거치지 않도록 설정
+        return path.startsWith("/login/oauth2/") ||
+                path.startsWith("/oauth2/") ||
+                path.startsWith("/api/oauth2/") ||
+                path.startsWith("/favicon.ico") ||
+                path.equals("/");
+    }
 }

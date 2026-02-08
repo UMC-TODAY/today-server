@@ -11,11 +11,11 @@ import java.time.LocalDate;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class MemberWithdrawService {
 
     private final MemberRepository memberRepository;
 
+    @Transactional
     public void checkWithdraw(String email) {
         memberRepository.findByDeletedStatus(email)
                 .ifPresent(member -> {
@@ -27,7 +27,8 @@ public class MemberWithdrawService {
                         throw new MemberException(MemberErrorCode.WITHDRAW_EMAIL);
                     }
 
-                    memberRepository.deletePrevEmail(member.getId());
+                    member.deleteEmail();
+                    memberRepository.flush();
                 });
     }
 }
