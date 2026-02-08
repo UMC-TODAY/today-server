@@ -25,6 +25,6 @@ public class AuthService {
         TokenDto tokenDto = tokenService.issueTokens(member);
         CookieUtil.addCookie(response, "refreshToken", tokenDto.getRefreshToken(), (int) Duration.ofDays(1).toSeconds());
 
-        return MemberConverter.toLoginResDto(member, tokenDto);
+        return MemberConverter.toLoginResDto(member, tokenDto.getAccessToken());
     }
 }

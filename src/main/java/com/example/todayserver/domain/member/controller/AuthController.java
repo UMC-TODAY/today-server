@@ -67,7 +67,7 @@ public class AuthController implements AuthControllerDocs {
     }
 
     @PostMapping("/token/reissue")
-    public ApiResponse<TokenDto> reissue(@CookieValue("refreshToken") String refreshToken){
+    public ApiResponse<MemberResDto.LoginDto> reissue(@CookieValue("refreshToken") String refreshToken){
         return ApiResponse.success(tokenService.reissueTokens(refreshToken));
     }
 

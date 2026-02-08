@@ -57,7 +57,7 @@ public interface AuthControllerDocs {
             summary = "로그인 유지",
             description = "리프레시 토큰으로 새 엑세스 토큰을 발급합니다."
     )
-    ApiResponse<TokenDto> reissue(@CookieValue("refreshToken") String refreshToken);
+    ApiResponse<MemberResDto.LoginDto> reissue(@CookieValue("refreshToken") String refreshToken);
 
     @Operation(
             summary = "로그아웃",

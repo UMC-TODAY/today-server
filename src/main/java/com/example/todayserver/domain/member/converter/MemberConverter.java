@@ -28,11 +28,11 @@ public class MemberConverter {
 
     public static MemberResDto.LoginDto toLoginResDto(
             Member member,
-            TokenDto tokenDto
+            String accessToken
     ){
         return MemberResDto.LoginDto.builder()
                 .memberId(member.getId())
-                .accessToken(tokenDto.getAccessToken())
+                .accessToken(accessToken)
                 .build();
     }
 
