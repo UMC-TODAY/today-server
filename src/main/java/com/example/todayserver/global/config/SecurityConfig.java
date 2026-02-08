@@ -1,7 +1,6 @@
 package com.example.todayserver.global.config;
 
 import com.example.todayserver.domain.member.repository.MemberRepository;
-import com.example.todayserver.domain.member.service.MemberService;
 import com.example.todayserver.global.common.jwt.JwtAuthFilter;
 import com.example.todayserver.global.common.jwt.JwtUtil;
 import com.example.todayserver.global.oauth.OAuth2SuccessHandler;
@@ -13,6 +12,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -34,17 +34,27 @@ public class SecurityConfig {
             "/api/v1/auth/**",
             "/api/oauth2/**",
             "/login/oauth2/**",
+            "/login/oauth2/code/**",
             "/oauth2/**",
+            "/login/**",
+            "/error",
             "/favicon.ico"
     };
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, OAuth2UserCustomService oAuth2UserCustomService, OAuth2SuccessHandler oAuth2SuccessHandler) throws Exception {
         http
+                .csrf(AbstractHttpConfigurer::disable)
+                .formLogin(AbstractHttpConfigurer::disable)
+                .httpBasic(AbstractHttpConfigurer::disable)
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                )
                 .authorizeHttpRequests(requests -> requests
                         .requestMatchers(allowUris).permitAll()
                         .anyRequest().authenticated()
                 )
+                .addFilterBefore(jwtAuthFilter(), UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint((request, response, authException) -> {
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -56,10 +66,6 @@ public class SecurityConfig {
                             }
                             """);
                 }))
-                // 폼로그인 비활성화
-                .formLogin(AbstractHttpConfigurer::disable)
-                .addFilterBefore(jwtAuthFilter(), UsernamePasswordAuthenticationFilter.class)
-                .csrf(AbstractHttpConfigurer::disable)
                 .oauth2Login(oauth2 -> oauth2
                         .userInfoEndpoint(userInfo -> userInfo.userService(oAuth2UserCustomService))
                         .successHandler(oAuth2SuccessHandler));

@@ -2,6 +2,7 @@ package com.example.todayserver.global.oauth;
 
 import com.example.todayserver.domain.member.dto.TokenDto;
 import com.example.todayserver.domain.member.entity.Member;
+import com.example.todayserver.domain.member.enums.Status;
 import com.example.todayserver.domain.member.excpetion.MemberException;
 import com.example.todayserver.domain.member.excpetion.code.MemberErrorCode;
 import com.example.todayserver.domain.member.repository.MemberRepository;
@@ -18,10 +19,12 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
+import jakarta.servlet.http.Cookie;
 
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @Component
@@ -40,7 +43,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         OAuth2UserInfo userInfo = OAuth2UserInfoFactory.getOAuth2UserInfo(registrationId,attributes);
 
-        Member member = memberRepository.findBySocialTypeAndProviderUserId(userInfo.getProvider(), userInfo.getProviderId())
+        Member member = memberRepository.findBySocialTypeAndProviderUserIdAndStatus(userInfo.getProvider(), userInfo.getProviderId(), Status.ACTIVATE)
                 .orElseThrow(() -> new MemberException(MemberErrorCode.NOT_FOUND));
 
         TokenDto tokenDto = tokenService.issueTokens(member);

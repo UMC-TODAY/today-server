@@ -5,6 +5,7 @@
     import com.example.todayserver.domain.member.dto.OAuthDto;
     import com.example.todayserver.domain.member.entity.Member;
     import com.example.todayserver.domain.member.entity.Preference;
+    import com.example.todayserver.domain.member.enums.Status;
     import com.example.todayserver.domain.member.excpetion.MemberException;
     import com.example.todayserver.domain.member.excpetion.code.MemberErrorCode;
     import com.example.todayserver.domain.member.repository.MemberRepository;
@@ -51,10 +52,12 @@
 
         private Member saveOrUpdate(OAuth2UserInfo userInfo) {
             memberWithdrawService.checkWithdraw(userInfo.getEmail());
-            Member member = memberRepository.findBySocialTypeAndProviderUserId(
+            Member member = memberRepository.findBySocialTypeAndProviderUserIdAndStatus(
                             userInfo.getProvider(),
-                            userInfo.getProviderId()
+                            userInfo.getProviderId(),
+                            Status.ACTIVATE
                     )
+
                     .map(m -> {
                         if (!m.getSocialType().equals(userInfo.getProvider())) {
                             throw new MemberException(MemberErrorCode.DUPLICATE_SOCIAL);
@@ -65,13 +68,13 @@
                     .orElse(
                             MemberConverter.toOAuthMember(userInfo)
                     );
-                    preferenceRepository.findByMemberId(member.getId())
-                        .orElseGet(() ->
-                                preferenceRepository.save(
-                                        PreferenceConverter.newPreference(member)
-                                )
-                    );
             memberRepository.save(member);
+            preferenceRepository.findByMemberId(member.getId())
+                .orElseGet(() ->
+                        preferenceRepository.save(
+                                PreferenceConverter.newPreference(member)
+                        )
+            );
             return member;
         }
     }

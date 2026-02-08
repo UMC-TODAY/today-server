@@ -66,4 +66,13 @@ public class Member extends BaseEntity {
         this.nickname = nickname;
     }
 
+    public void deleteEmail(){
+        email = null;
+    }
+
+    public void statusDeleted(){
+        status = Status.DELETED;
+        inactivateDate = LocalDate.now();
+    }
+
 }
