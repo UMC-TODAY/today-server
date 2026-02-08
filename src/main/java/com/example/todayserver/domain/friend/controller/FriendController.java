@@ -56,13 +56,12 @@ public class FriendController {
         return ApiResponse.success(result);
     }
 
-    @Operation(summary = "친구 검색", description = "닉네임으로 내 친구 목록을 검색합니다.")
-    @GetMapping("/search")
-    public ApiResponse<FriendResponseDTO.FriendListDTO> searchFriends(
+    @Operation(summary = "전체 유저 검색", description = "닉네임을 검색합니다.")
+    @GetMapping("/search/all")
+    public ApiResponse<FriendResponseDTO.FriendListDTO> searchAllUsers(
             @AuthenticationPrincipal Member loginMember,
             @RequestParam(name = "keyword") String keyword) {
 
-        // QueryService의 검색 메서드 호출
-        return ApiResponse.success(friendQueryService.searchFriends(loginMember, keyword));
+        return ApiResponse.success(friendQueryService.searchAllUsers(loginMember, keyword));
     }
 }

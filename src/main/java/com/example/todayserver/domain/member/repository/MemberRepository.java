@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface MemberRepository extends JpaRepository<Member, Long> {
@@ -14,6 +15,8 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     Optional<Member> findByEmail(String email);
     Optional<Member> findBySocialTypeAndProviderUserId(SocialType socialType, String providerId);
     boolean existsByNickname(String nickname);
+
+    List<Member> findAllByNicknameContaining(String keyword);
     @Query(
             value = """
               select *
