@@ -77,17 +77,12 @@ public class SecurityConfig {
                         .userInfoEndpoint(userInfo -> userInfo.userService(oAuth2UserCustomService))
                         .successHandler(oAuth2SuccessHandler)
                         .failureHandler((request, response, exception) -> {
-                            // 1. 서버 콘솔에 로그 출력
-                            System.err.println("============== 로그인 실패 ==============");
-                            System.err.println("원인: " + exception.getMessage());
-
-                            // 2. 프론트엔드에 JSON으로 원인 전달
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                             response.setContentType("application/json;charset=UTF-8");
 
                             String jsonResponse = String.format(
                                     "{\"code\": \"LOGIN_FAILED\", \"message\": \"%s\"}",
-                                    exception.getMessage() // 여기에 진짜 이유가 담깁니다!
+                                    exception.getMessage()
                             );
                             response.getWriter().write(jsonResponse);
                         })
