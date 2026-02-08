@@ -7,6 +7,9 @@ import com.example.todayserver.global.oauth.OAuth2SuccessHandler;
 import com.example.todayserver.global.oauth.OAuth2UserCustomService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.apache.tomcat.util.http.Rfc6265CookieProcessor;
+import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
+import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -110,7 +113,7 @@ public class SecurityConfig {
         // 프론트엔드 주소 허용
         configuration.addAllowedOrigin("http://localhost:5173");
         configuration.addAllowedOrigin("http://107.20.245.245");
-        configuration.addAllowedOrigin("http://107.20.245.245.nip.io");
+        configuration.addAllowedOrigin("https://today-app.co.kr");
 
         // 허용할 헤더와 메서드
         configuration.addAllowedHeader("*");
@@ -127,5 +130,17 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
+
+    @Bean
+    public ServletWebServerFactory servletContainer() {
+        TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory();
+        tomcat.addContextCustomizers(context -> {
+            final Rfc6265CookieProcessor cookieProcessor = new Rfc6265CookieProcessor();
+            cookieProcessor.setSameSiteCookies("None"); // SameSite=None
+            context.setCookieProcessor(cookieProcessor);
+        });
+        return tomcat;
+    }
+
 
 }
