@@ -9,7 +9,6 @@ public class MemberResDto {
     public static class LoginDto{
         Long memberId;
         String accessToken;
-        String refreshToken;
     }
 
     @Data

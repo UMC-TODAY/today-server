@@ -44,8 +44,7 @@ public class TokenService {
     }
 
     @Transactional
-    public TokenDto reissueTokens(TokenReissueDto dto){
-        String refreshTokenValue = dto.getRefreshToken();
+    public TokenDto reissueTokens(String refreshTokenValue){
         RefreshToken refreshToken = refreshTokenRepository.findByRefreshToken(refreshTokenValue)
                         .orElseThrow(() -> new AuthException(AuthErrorCode.TOKEN_NOT_FOUND));
 
@@ -64,8 +63,7 @@ public class TokenService {
         return new TokenDto(accessToken, newRefreshTokenValue);
     }
 
-    public void logout(TokenReissueDto dto){
-        String refreshTokenValue = dto.getRefreshToken();
+    public void logout(String refreshTokenValue){
         RefreshToken refreshToken = refreshTokenRepository.findByRefreshToken(refreshTokenValue)
                 .orElseThrow(() -> new AuthException(AuthErrorCode.TOKEN_NOT_FOUND));
         refreshTokenRepository.delete(refreshToken);

@@ -62,19 +62,19 @@ public class AuthController implements AuthControllerDocs {
     }
 
     @PostMapping("/login/email")
-    public ApiResponse<MemberResDto.LoginDto> emailLogin(@Valid @RequestBody MemberReqDto.LoginDto dto){
-        return ApiResponse.success(authService.emailLogin(dto));
+    public ApiResponse<MemberResDto.LoginDto> emailLogin(@Valid @RequestBody MemberReqDto.LoginDto dto, HttpServletResponse response){
+        return ApiResponse.success(authService.emailLogin(dto, response));
     }
 
     @PostMapping("/token/reissue")
-    public ApiResponse<TokenDto> reissue(@Valid @RequestBody TokenReissueDto dto){
-        return ApiResponse.success(tokenService.reissueTokens(dto));
+    public ApiResponse<TokenDto> reissue(@CookieValue("refreshToken") String refreshToken){
+        return ApiResponse.success(tokenService.reissueTokens(refreshToken));
     }
 
     @PostMapping("/logout")
-    public ApiResponse<Void> logout(@Valid @RequestBody TokenReissueDto dto,
+    public ApiResponse<Void> logout(@CookieValue("refreshToken") String refreshToken,
                                     HttpServletRequest request, HttpServletResponse response){
-        tokenService.logout(dto);
+        tokenService.logout(refreshToken);
         CookieUtil.deleteCookie(request, response, "refreshToken");
         return ApiResponse.success(null);
     }

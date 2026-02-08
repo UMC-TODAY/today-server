@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.RequestBody;
 
 public interface AuthControllerDocs {
@@ -50,18 +51,18 @@ public interface AuthControllerDocs {
             summary = "이메일 로그인",
             description = "이메일 로그인을 잔행합니다."
     )
-    ApiResponse<MemberResDto.LoginDto> emailLogin(@Valid @RequestBody MemberReqDto.LoginDto dto);
+    ApiResponse<MemberResDto.LoginDto> emailLogin(@Valid @RequestBody MemberReqDto.LoginDto dto, HttpServletResponse response);
 
     @Operation(
             summary = "로그인 유지",
             description = "리프레시 토큰으로 새 엑세스 토큰을 발급합니다."
     )
-    ApiResponse<TokenDto> reissue(@Valid @RequestBody TokenReissueDto dto);
+    ApiResponse<TokenDto> reissue(@CookieValue("refreshToken") String refreshToken);
 
     @Operation(
             summary = "로그아웃",
             description = "리프레시 토큰을 삭제합니다."
     )
-    ApiResponse<Void> logout(@Valid @RequestBody TokenReissueDto dto,
+    ApiResponse<Void> logout(@CookieValue("refreshToken") String refreshToken,
                              HttpServletRequest request, HttpServletResponse response);
 }

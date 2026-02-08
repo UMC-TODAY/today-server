@@ -33,7 +33,6 @@ public class MemberConverter {
         return MemberResDto.LoginDto.builder()
                 .memberId(member.getId())
                 .accessToken(tokenDto.getAccessToken())
-                .refreshToken(tokenDto.getRefreshToken())
                 .build();
     }
 
