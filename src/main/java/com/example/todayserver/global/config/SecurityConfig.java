@@ -109,6 +109,8 @@ public class SecurityConfig {
 
         // 프론트엔드 주소 허용
         configuration.addAllowedOrigin("http://localhost:5173");
+        configuration.addAllowedOrigin("http://107.20.245.245");
+        configuration.addAllowedOrigin("http://107.20.245.245.nip.io");
 
         // 허용할 헤더와 메서드
         configuration.addAllowedHeader("*");
