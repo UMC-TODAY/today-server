@@ -2,6 +2,7 @@ package com.example.todayserver.global.oauth;
 
 import com.example.todayserver.domain.member.dto.TokenDto;
 import com.example.todayserver.domain.member.entity.Member;
+import com.example.todayserver.domain.member.enums.SocialType;
 import com.example.todayserver.domain.member.enums.Status;
 import com.example.todayserver.domain.member.excpetion.MemberException;
 import com.example.todayserver.domain.member.excpetion.code.MemberErrorCode;
@@ -50,8 +51,16 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         CookieUtil.addCookie(response, "refreshToken", tokenDto.getRefreshToken(), (int) Duration.ofDays(1).toSeconds());
 
-        response.sendRedirect(
-                "http://localhost:5173/login/callback?accessToken=" + tokenDto.getAccessToken()
-        );
+        if (userInfo.getProvider().equals(SocialType.NAVER)) {
+            response.sendRedirect(
+                    "http://localhost:5173/login/naver/callback?accessToken=" + tokenDto.getAccessToken()
+            );
+        }
+        else if (userInfo.getProvider().equals(SocialType.GOOGLE)) {
+            response.sendRedirect(
+                    "http://localhost:5173/login/google/callback?accessToken=" + tokenDto.getAccessToken()
+            );
+        }
+
     }
 }
