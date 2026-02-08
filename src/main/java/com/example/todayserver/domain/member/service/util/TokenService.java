@@ -1,5 +1,7 @@
 package com.example.todayserver.domain.member.service.util;
 
+import com.example.todayserver.domain.member.converter.MemberConverter;
+import com.example.todayserver.domain.member.dto.MemberResDto;
 import com.example.todayserver.domain.member.dto.TokenDto;
 import com.example.todayserver.domain.member.dto.TokenReissueDto;
 import com.example.todayserver.domain.member.entity.Member;
@@ -44,8 +46,7 @@ public class TokenService {
     }
 
     @Transactional
-    public TokenDto reissueTokens(TokenReissueDto dto){
-        String refreshTokenValue = dto.getRefreshToken();
+    public MemberResDto.LoginDto reissueTokens(String refreshTokenValue){
         RefreshToken refreshToken = refreshTokenRepository.findByRefreshToken(refreshTokenValue)
                         .orElseThrow(() -> new AuthException(AuthErrorCode.TOKEN_NOT_FOUND));
 
@@ -61,11 +62,10 @@ public class TokenService {
 
         refreshToken.update(newRefreshTokenValue, LocalDateTime.now().plusDays(1));
 
-        return new TokenDto(accessToken, newRefreshTokenValue);
+        return MemberConverter.toLoginResDto(member, accessToken);
     }
 
-    public void logout(TokenReissueDto dto){
-        String refreshTokenValue = dto.getRefreshToken();
+    public void logout(String refreshTokenValue){
         RefreshToken refreshToken = refreshTokenRepository.findByRefreshToken(refreshTokenValue)
                 .orElseThrow(() -> new AuthException(AuthErrorCode.TOKEN_NOT_FOUND));
         refreshTokenRepository.delete(refreshToken);
