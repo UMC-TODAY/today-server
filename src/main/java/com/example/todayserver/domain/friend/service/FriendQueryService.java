@@ -5,6 +5,7 @@ import com.example.todayserver.domain.friend.entity.Friend;
 import com.example.todayserver.domain.friend.entity.FriendStatus;
 import com.example.todayserver.domain.friend.repository.FriendRepository;
 import com.example.todayserver.domain.member.entity.Member;
+import com.example.todayserver.domain.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +18,7 @@ import java.util.List;
 public class FriendQueryService {
 
     private final FriendRepository friendRepository;
+    private final MemberRepository memberRepository;
 
     public FriendResponseDTO.FriendListDTO getFriendList(Member loginMember) {
         // 내가 보낸 요청 중 수락된 것 + 내가 받은 요청 중 수락된 것 조회
@@ -47,21 +49,25 @@ public class FriendQueryService {
                 .build();
     }
 
-    // 친구 닉네임 검색
-    public FriendResponseDTO.FriendListDTO searchFriends(Member loginMember, String keyword) {
-        // 내가 보낸 요청 중 수락됨 + 상대방 닉네임에 키워드 포함
-        List<Friend> searchAsRequester = friendRepository.findAllByRequesterAndStatusAndReceiverNicknameContaining(
-                loginMember, FriendStatus.ACCEPTED, keyword);
+    // 전체 유저 대상으로 닉네임 검색
+    public FriendResponseDTO.FriendListDTO searchAllUsers(Member loginMember, String keyword) {
+        // 전체 유저 중 닉네임에 키워드가 포함된 유저 조회 (나 자신은 제외)
+        List<Member> allFound = memberRepository.findAllByNicknameContaining(keyword);
 
-        // 내가 받은 요청 중 수락됨 + 상대방 닉네임에 키워드 포함
-        List<Friend> searchAsReceiver = friendRepository.findAllByReceiverAndStatusAndRequesterNicknameContaining(
-                loginMember, FriendStatus.ACCEPTED, keyword);
+        List<Member> searchedMembers = allFound.stream()
+                .filter(m -> !m.getId().equals(loginMember.getId()))
+                .toList();
 
-        List<FriendResponseDTO.FriendInfoDTO> friendInfos = new java.util.ArrayList<>();
-
-        // 상대방 정보 추출 (기존 mapToInfo 메서드 재사용)
-        searchAsRequester.forEach(f -> friendInfos.add(mapToInfo(f, f.getReceiver())));
-        searchAsReceiver.forEach(f -> friendInfos.add(mapToInfo(f, f.getRequester())));
+        // 검색된 유저들을 DTO로 변환
+        List<FriendResponseDTO.FriendInfoDTO> friendInfos = searchedMembers.stream()
+                .map(m -> FriendResponseDTO.FriendInfoDTO.builder()
+                        .memberId(m.getId())
+                        .nickname(m.getNickname())
+                        .profileImageUrl(m.getProfileImage())
+                        .friendRecordId(null) // 아직 친구가 아니므로 null
+                        .isSharingCalendar(false) // 기본값
+                        .build())
+                .toList();
 
         return FriendResponseDTO.FriendListDTO.builder()
                 .friends(friendInfos)
