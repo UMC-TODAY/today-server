@@ -5,6 +5,7 @@ import com.example.todayserver.domain.post.dto.PostResponseDTO;
 import com.example.todayserver.domain.post.entity.Comment;
 import com.example.todayserver.domain.post.entity.Post;
 import com.example.todayserver.domain.post.repository.CommentRepository;
+import com.example.todayserver.domain.post.repository.PostLikeRepository;
 import com.example.todayserver.domain.post.repository.PostRepository;
 import com.example.todayserver.global.common.util.TimeUtil;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ public class PostQueryService {
 
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
+    private final PostLikeRepository postLikeRepository;
 
     // 최근 피드 목록 조회
     public PostResponseDTO.PostListResponse getPostFeed(Member loginMember, Long lastPostId, int size) {
@@ -42,10 +44,8 @@ public class PostQueryService {
 
         // 상단 요약 통계 정보 조회 (좋아요, 게시물 개수, 댓글)
         Long totalPostCount = postRepository.countByMember(member);
-
-        // TODO: Like, Comment 테이블 구현 후 실제 누적 count 로직으로 변경 예정
-        Long totalLikeCount = 0L;
-        Long totalCommentCount = 0L;
+        Long totalLikeCount = postLikeRepository.countAllLikesByPostMember(member);
+        Long totalCommentCount = commentRepository.countAllCommentsByPostMember(member);
 
         // 피드 목록 변환 (공통)
         PostResponseDTO.PostListResponse postListResponse = buildPostListResponse(postSlice, member);
