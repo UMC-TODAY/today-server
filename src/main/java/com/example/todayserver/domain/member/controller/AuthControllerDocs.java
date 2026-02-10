@@ -51,7 +51,7 @@ public interface AuthControllerDocs {
             summary = "이메일 로그인",
             description = "이메일 로그인을 잔행합니다."
     )
-    ApiResponse<MemberResDto.LoginDto> emailLogin(@Valid @RequestBody MemberReqDto.LoginDto dto, HttpServletResponse response);
+    ApiResponse<MemberResDto.LoginDto> emailLogin(@Valid @RequestBody MemberReqDto.LoginReqDto dto, HttpServletResponse response);
 
     @Operation(
             summary = "로그인 유지",

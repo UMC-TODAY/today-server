@@ -49,7 +49,7 @@ public class MemberController implements MemberControllerDocs {
     }
 
     @PatchMapping("/password/reset")
-    public ApiResponse<Void> updatePasswordRest(@Valid @RequestBody MemberReqDto.LoginDto dto){
+    public ApiResponse<Void> updatePasswordRest(@Valid @RequestBody MemberReqDto.LoginReqDto dto){
         memberService.updatePasswordReset(dto.getPassword(), dto.getEmail());
         return ApiResponse.success(null);
     }

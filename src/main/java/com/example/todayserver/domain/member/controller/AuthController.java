@@ -62,7 +62,7 @@ public class AuthController implements AuthControllerDocs {
     }
 
     @PostMapping("/login/email")
-    public ApiResponse<MemberResDto.LoginDto> emailLogin(@Valid @RequestBody MemberReqDto.LoginDto dto, HttpServletResponse response){
+    public ApiResponse<MemberResDto.LoginDto> emailLogin(@Valid @RequestBody MemberReqDto.LoginReqDto dto, HttpServletResponse response){
         return ApiResponse.success(authService.emailLogin(dto, response));
     }
 

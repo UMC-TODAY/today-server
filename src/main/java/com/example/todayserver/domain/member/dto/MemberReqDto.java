@@ -21,7 +21,7 @@ public class MemberReqDto {
     }
 
     @Data
-    public static class LoginDto{
+    public static class LoginReqDto{
         @NotBlank
         @Email
         private String email;

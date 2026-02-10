@@ -10,7 +10,7 @@ public interface MemberService {
 
     void checkEmailDuplicate(String email);
     void emailSignup(MemberReqDto.SignupDto dto);
-    Member emailLogin(MemberReqDto.LoginDto dto);
+    Member emailLogin(MemberReqDto.LoginReqDto dto);
     void checkNicknameDuplicate(String nickname);
     MemberResDto.MemberInfo getMemberInfo(Long id);
     MemberResDto.MemberInfo getMyInfo(String token);
