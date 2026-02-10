@@ -44,6 +44,8 @@ jobs:
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+            set -e
+            
             sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/today-app:latest
 
             sudo docker stop today-container || true
