@@ -5,6 +5,7 @@ import com.example.todayserver.domain.member.entity.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 public interface DailyDifficultyRepository extends JpaRepository<DailyDifficulty, Long> {
@@ -14,4 +15,7 @@ public interface DailyDifficultyRepository extends JpaRepository<DailyDifficulty
 
     // 특정 회원의 특정 날짜 난이도 평가 존재 여부
     boolean existsByMemberAndDate(Member member, LocalDate date);
+
+    // 특정 회원의 기간 내 난이도 평가 조회
+    List<DailyDifficulty> findByMemberAndDateBetween(Member member, LocalDate startDate, LocalDate endDate);
 }

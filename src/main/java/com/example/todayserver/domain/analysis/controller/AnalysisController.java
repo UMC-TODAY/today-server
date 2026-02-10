@@ -2,12 +2,7 @@ package com.example.todayserver.domain.analysis.controller;
 
 import com.example.todayserver.domain.analysis.dto.request.DifficultyRequest;
 import com.example.todayserver.domain.analysis.dto.request.FocusChecklistRequest;
-import com.example.todayserver.domain.analysis.dto.response.BadgeStatsResponse;
-import com.example.todayserver.domain.analysis.dto.response.DifficultyResponse;
-import com.example.todayserver.domain.analysis.dto.response.FocusChecklistResponse;
-import com.example.todayserver.domain.analysis.dto.response.GrassMapResponse;
-import com.example.todayserver.domain.analysis.dto.response.TogetherDaysResponse;
-import com.example.todayserver.domain.analysis.dto.response.WeeklyCompletionResponse;
+import com.example.todayserver.domain.analysis.dto.response.*;
 import com.example.todayserver.domain.analysis.service.AnalysisService;
 import com.example.todayserver.domain.member.entity.Member;
 import com.example.todayserver.global.common.response.ApiResponse;
@@ -64,6 +59,16 @@ public class AnalysisController {
         
         DifficultyResponse.Update response = analysisService.updateDailyDifficulty(member, request);
         return ApiResponse.success("난이도 평가 수정 성공", response);
+    }
+
+    @Operation(summary = "주간 난이도 조회", description = "이번 주(일~토) 난이도 평가를 조회합니다.")
+    @GetMapping("/difficulty/weekly")
+    public ApiResponse<WeeklyDifficultyResponse> getWeeklyDifficulty(
+            @AuthenticationPrincipal Member member,
+            @RequestParam(required = false) LocalDate date) {
+        
+        WeeklyDifficultyResponse response = analysisService.getWeeklyDifficulty(member, date);
+        return ApiResponse.success("주간 난이도 조회 성공", response);
     }
 
     @Operation(summary = "잔디맵 조회 (최근 91일)", description = "최근 91일간 일정 완료 현황을 잔디맵 형태로 조회합니다.")
