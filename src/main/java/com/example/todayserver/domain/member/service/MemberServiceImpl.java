@@ -76,7 +76,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public Member emailLogin(MemberReqDto.LoginDto dto) {
+    public Member emailLogin(MemberReqDto.LoginReqDto dto) {
         Member member = getMemberByEmail(dto.getEmail());
 
         if (!passwordEncoder.matches(dto.getPassword(), member.getPassword())) {

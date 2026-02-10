@@ -20,7 +20,7 @@ public class AuthService {
     private final MemberService memberService;
     private final TokenService tokenService;
 
-    public MemberResDto.LoginDto emailLogin(MemberReqDto.LoginDto dto, HttpServletResponse response){
+    public MemberResDto.LoginDto emailLogin(MemberReqDto.LoginReqDto dto, HttpServletResponse response){
         Member member = memberService.emailLogin(dto);
         TokenDto tokenDto = tokenService.issueTokens(member);
         CookieUtil.addCookie(response, "refreshToken", tokenDto.getRefreshToken(), (int) Duration.ofDays(1).toSeconds());

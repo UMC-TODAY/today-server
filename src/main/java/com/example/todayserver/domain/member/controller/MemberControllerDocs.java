@@ -44,7 +44,7 @@ public interface MemberControllerDocs {
             summary = "비밀번호 재설정",
             description = "비밀 번호를 잊은 경우 재설정합니다."
     )
-    ApiResponse<Void> updatePasswordRest(@Valid @RequestBody MemberReqDto.LoginDto dto);
+    ApiResponse<Void> updatePasswordRest(@Valid @RequestBody MemberReqDto.LoginReqDto dto);
     
     @Operation(
             summary = "프로필 정보 수정 API",
