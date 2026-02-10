@@ -34,8 +34,8 @@ jobs:
 
       - name: Build and Push Docker Image
         run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/today-app .
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/today-app
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/today-app:latest .
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/today-app:latest
 
       - name: Deploy to EC2
         uses: appleboy/ssh-action@master
@@ -44,9 +44,11 @@ jobs:
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/today-app
+            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/today-app:latest
+
             sudo docker stop today-container || true
             sudo docker rm today-container || true
+
             sudo docker run -d --name today-container \
               -p 127.0.0.1:8080:8080 \
               -e DB_URL="${{ secrets.DB_URL }}" \
@@ -67,4 +69,7 @@ jobs:
               -e NOTION_CLIENT_SECRET="${{ secrets.NOTION_CLIENT_SECRET }}" \
               -e NOTION_REDIRECT_URI="${{ secrets.NOTION_REDIRECT_URI }}" \
               -e NOTION_VERSION="${{ secrets.NOTION_VERSION }}" \
-              ${{ secrets.DOCKERHUB_USERNAME }}/today-app
+              ${{ secrets.DOCKERHUB_USERNAME }}/today-app:latest
+
+            # 사용되지 않는 도커 이미지(dangling) 정리
+            sudo docker image prune -f
