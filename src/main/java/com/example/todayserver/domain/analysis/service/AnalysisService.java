@@ -2,17 +2,14 @@ package com.example.todayserver.domain.analysis.service;
 
 import com.example.todayserver.domain.analysis.dto.request.DifficultyRequest;
 import com.example.todayserver.domain.analysis.dto.request.FocusChecklistRequest;
-import com.example.todayserver.domain.analysis.dto.response.BadgeStatsResponse;
-import com.example.todayserver.domain.analysis.dto.response.DifficultyResponse;
-import com.example.todayserver.domain.analysis.dto.response.FocusChecklistResponse;
-import com.example.todayserver.domain.analysis.dto.response.GrassMapResponse;
-import com.example.todayserver.domain.analysis.dto.response.TogetherDaysResponse;
-import com.example.todayserver.domain.analysis.dto.response.WeeklyCompletionResponse;
+import com.example.todayserver.domain.analysis.dto.response.*;
 import com.example.todayserver.domain.analysis.entity.DailyDifficulty;
 import com.example.todayserver.domain.analysis.entity.FocusChecklist;
+import com.example.todayserver.domain.analysis.entity.LoginStreak;
 import com.example.todayserver.domain.analysis.enums.DifficultyLevel;
 import com.example.todayserver.domain.analysis.repository.DailyDifficultyRepository;
 import com.example.todayserver.domain.analysis.repository.FocusChecklistRepository;
+import com.example.todayserver.domain.analysis.repository.LoginStreakRepository;
 import com.example.todayserver.domain.member.entity.Member;
 import com.example.todayserver.domain.member.repository.MemberRepository;
 import com.example.todayserver.domain.schedule.entity.Schedule;
@@ -39,6 +36,7 @@ public class AnalysisService {
     private final ScheduleRepository scheduleRepository;
     private final DailyDifficultyRepository dailyDifficultyRepository;
     private final FocusChecklistRepository focusChecklistRepository;
+    private final LoginStreakRepository loginStreakRepository;
     private final MemberRepository memberRepository;
 
     // 고정된 체크리스트 항목들
@@ -192,7 +190,8 @@ public class AnalysisService {
         return messages;
     }
 
-    // TODAY와 함께 하고 있어요 (가입일로부터 경과 일수)
+    // TODAY와 함께 하고 있어요 (가입일로부터 경과 일수 + 연속 접속일)
+    @Transactional
     public TogetherDaysResponse getTogetherDays(Member member) {
         LocalDate joinedDate = member.getCreatedAt().toLocalDate();
         LocalDate today = LocalDate.now();
@@ -201,13 +200,36 @@ public class AnalysisService {
         long daysBetween = java.time.temporal.ChronoUnit.DAYS.between(joinedDate, today);
         int togetherDays = (int) daysBetween + 1;
         
+        // 연속 접속일 계산 및 업데이트
+        int consecutiveDays = updateAndGetConsecutiveDays(member, today);
+        
         String message = String.format("TO:DAY와 %d일째 함께하고 있어요!", togetherDays);
         
         return TogetherDaysResponse.builder()
                 .togetherDays(togetherDays)
+                .consecutiveDays(consecutiveDays)
                 .joinedAt(joinedDate.toString())
                 .message(message)
                 .build();
+    }
+
+    // 연속 접속일 업데이트 및 조회
+    private int updateAndGetConsecutiveDays(Member member, LocalDate today) {
+        LoginStreak loginStreak = loginStreakRepository.findByMember(member)
+                .orElseGet(() -> {
+                    // 첫 접속 - 새로 생성
+                    LoginStreak newStreak = LoginStreak.builder()
+                            .member(member)
+                            .lastLoginAt(today)
+                            .consecutiveDays(1)
+                            .build();
+                    return loginStreakRepository.save(newStreak);
+                });
+
+        // 연속 접속일 업데이트
+        loginStreak.updateStreak(today);
+        
+        return loginStreak.getConsecutiveDays();
     }
 
     // 일정소화난이도 평가 등록
@@ -257,6 +279,56 @@ public class AnalysisService {
                 .difficultyLevel(dailyDifficulty.getDifficultyLevel())
                 .difficultyName(difficultyLevel.getName())
                 .updatedAt(dailyDifficulty.getUpdatedAt())
+                .build();
+    }
+
+    // 주간 난이도 조회 (일~토 기준)
+    public WeeklyDifficultyResponse getWeeklyDifficulty(Member member, LocalDate date) {
+        // 기준 날짜가 없으면 오늘
+        LocalDate targetDate = (date != null) ? date : LocalDate.now();
+
+        // 해당 주의 일요일(시작)과 토요일(종료) 계산
+        LocalDate weekStart = targetDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY));
+        LocalDate weekEnd = targetDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SATURDAY));
+
+        // 해당 주간 난이도 데이터 조회
+        List<DailyDifficulty> difficulties = dailyDifficultyRepository.findByMemberAndDateBetween(
+                member, weekStart, weekEnd);
+
+        // 날짜별로 매핑
+        Map<LocalDate, DailyDifficulty> difficultyMap = difficulties.stream()
+                .collect(Collectors.toMap(DailyDifficulty::getDate, d -> d));
+
+        // 7일간의 데이터 생성
+        List<WeeklyDifficultyResponse.DayDifficulty> days = new ArrayList<>();
+        for (int i = 0; i < 7; i++) {
+            LocalDate currentDate = weekStart.plusDays(i);
+            DailyDifficulty difficulty = difficultyMap.get(currentDate);
+
+            String difficultyName = null;
+            Integer difficultyLevel = null;
+            boolean isRegistered = false;
+
+            if (difficulty != null) {
+                difficultyLevel = difficulty.getDifficultyLevel();
+                difficultyName = DifficultyLevel.fromLevel(difficultyLevel).getName();
+                isRegistered = true;
+            }
+
+            days.add(WeeklyDifficultyResponse.DayDifficulty.builder()
+                    .date(currentDate.toString())
+                    .dayOfWeek(currentDate.getDayOfWeek().name())
+                    .dayName(currentDate.getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.KOREAN))
+                    .difficultyLevel(difficultyLevel)
+                    .difficultyName(difficultyName)
+                    .isRegistered(isRegistered)
+                    .build());
+        }
+
+        return WeeklyDifficultyResponse.builder()
+                .weekStart(weekStart.toString())
+                .weekEnd(weekEnd.toString())
+                .days(days)
                 .build();
     }
 
