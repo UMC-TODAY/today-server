@@ -33,33 +33,37 @@ public class FriendCommandService {
         Member receiver = memberRepository.findById(receiverId)
                 .orElseThrow(() -> new RuntimeException("해당 사용자를 찾을 수 없습니다."));
 
-        // 이미 보낸 요청이 있는지 확인
-        Optional<Friend> existingFriend = friendRepository.findByRequesterAndReceiver(requester, receiver);
+
+        Optional<Friend> existingFriend = friendRepository.findRelation(requester, receiver);
 
         if (existingFriend.isPresent()) {
-            // 이미 존재한다면 (상태가 PENDING 대기 일 때만 취소 가능하게 설정하거나 전체 삭제)
-            friendRepository.delete(existingFriend.get());
+            Friend friend = existingFriend.get();
+
+            // 이미 친구인 상태면 취소 불가
+            if (friend.getStatus() == FriendStatus.ACCEPTED) {
+                return "이미 친구 상태입니다.";
+            }
+
+            // 대기 중(PENDING)일 때만 요청 취소(삭제)
+            friendRepository.delete(friend);
             return "친구 요청 취소 완료";
 
         } else {
-            // 존재하지 않는다면 새로 요청
+            // 관계가 전혀 없는 상태 (NONE) -> 새로 요청 생성
             Friend friend = Friend.builder()
                     .requester(requester)
                     .receiver(receiver)
                     .status(FriendStatus.PENDING)
-                    .isSharingCalendar(true) // 기본값 ON
+                    .isSharingCalendar(true)
                     .build();
-            // 친구 요청 저장
-            Friend savedFriend = friendRepository.save(friend);
+            Friend savedFriend = friendRepository.save(friend); // 먼저 저장
 
-            // 상대방에게 알림 생성
             Notification notification = Notification.builder()
-                    .receiver(receiver) // 요청 받는 사람
+                    .receiver(receiver)
                     .content(requester.getNickname() + "님이 친구 요청을 보냈습니다.")
                     .type(NotificationType.FRIEND_REQUEST)
-                    .targetId(friend.getId()) // 수락/거절에 사용하는 friend의 ID
+                    .targetId(savedFriend.getId())
                     .build();
-
             notificationRepository.save(notification);
 
             return "친구 요청 완료";
