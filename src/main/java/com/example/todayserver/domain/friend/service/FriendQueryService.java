@@ -58,15 +58,22 @@ public class FriendQueryService {
                 .filter(m -> !m.getId().equals(loginMember.getId()))
                 .toList();
 
-        // 검색된 유저들을 DTO로 변환
         List<FriendResponseDTO.FriendInfoDTO> friendInfos = searchedMembers.stream()
-                .map(m -> FriendResponseDTO.FriendInfoDTO.builder()
-                        .memberId(m.getId())
-                        .nickname(m.getNickname())
-                        .profileImageUrl(m.getProfileImage())
-                        .friendRecordId(null) // 아직 친구가 아니므로 null
-                        .isSharingCalendar(false) // 기본값
-                        .build())
+                .map(targetMember -> {
+                    java.util.Optional<Friend> relation = friendRepository.findRelation(loginMember, targetMember);
+
+                    FriendStatus status = relation.map(Friend::getStatus).orElse(FriendStatus.NONE);
+                    Long recordId = relation.map(Friend::getId).orElse(null);
+
+                    return FriendResponseDTO.FriendInfoDTO.builder()
+                            .memberId(targetMember.getId())
+                            .nickname(targetMember.getNickname())
+                            .profileImageUrl(targetMember.getProfileImage())
+                            .friendStatus(status)
+                            .friendRecordId(recordId)
+                            .isSharingCalendar(relation.map(Friend::isSharingCalendar).orElse(false))
+                            .build();
+                })
                 .toList();
 
         return FriendResponseDTO.FriendListDTO.builder()
