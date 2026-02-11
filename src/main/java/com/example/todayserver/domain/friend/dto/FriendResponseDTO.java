@@ -20,7 +20,7 @@ public class FriendResponseDTO {
         private Long friendRecordId; // 친구 관계 자체의 ID -> 삭제/수정에 사용
         private Long memberId;       // 친구 ID
         private String nickname;
-        FriendStatus friendStatus;
+        private FriendStatus friendStatus;
         private String profileImageUrl;
         private boolean isSharingCalendar;
     }
