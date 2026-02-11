@@ -41,12 +41,12 @@ public class FriendCommandService {
 
             // 이미 친구인 상태면 취소 불가
             if (friend.getStatus() == FriendStatus.ACCEPTED) {
-                return "이미 친구 상태입니다.";
+                return "ACCEPTED";
             }
 
             // 대기 중(PENDING)일 때만 요청 취소(삭제)
             friendRepository.delete(friend);
-            return "친구 요청 취소 완료";
+            return "NONE";
 
         } else {
             // 관계가 전혀 없는 상태 (NONE) -> 새로 요청 생성
@@ -56,7 +56,7 @@ public class FriendCommandService {
                     .status(FriendStatus.PENDING)
                     .isSharingCalendar(true)
                     .build();
-            Friend savedFriend = friendRepository.save(friend); // 먼저 저장
+            Friend savedFriend = friendRepository.save(friend);
 
             Notification notification = Notification.builder()
                     .receiver(receiver)
@@ -66,7 +66,7 @@ public class FriendCommandService {
                     .build();
             notificationRepository.save(notification);
 
-            return "친구 요청 완료";
+            return "PENDING";
         }
     }
 
