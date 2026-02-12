@@ -106,9 +106,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         // 프론트엔드 주소 허용
-        configuration.addAllowedOrigin("http://localhost:5173");
-        configuration.addAllowedOrigin("http://107.20.245.245");
-        configuration.addAllowedOrigin("https://today-app.co.kr");
+        configuration.addAllowedOrigin("https://today-service.vercel.app");
 
         // 허용할 헤더와 메서드
         configuration.addAllowedHeader("*");
