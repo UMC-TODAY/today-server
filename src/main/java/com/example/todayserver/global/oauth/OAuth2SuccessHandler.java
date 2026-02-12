@@ -53,12 +53,12 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         if (userInfo.getProvider().equals(SocialType.NAVER)) {
             response.sendRedirect(
-                    "http://localhost:5173/login/naver/callback?accessToken=" + tokenDto.getAccessToken()
+                    "https://today-service.vercel.app/login/naver/callback?accessToken=" + tokenDto.getAccessToken()
             );
         }
         else if (userInfo.getProvider().equals(SocialType.GOOGLE)) {
             response.sendRedirect(
-                    "http://localhost:5173/login/google/callback?accessToken=" + tokenDto.getAccessToken()
+                    "https://today-service.vercel.app/login/google/callback?accessToken=" + tokenDto.getAccessToken()
             );
         }
 
